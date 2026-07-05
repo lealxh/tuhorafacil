@@ -1,0 +1,25 @@
+{
+  "name": "@tuhorafacil/api",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "wrangler deploy --dry-run --outdir dist",
+    "deploy": "wrangler deploy",
+    "check": "wrangler types && tsc --noEmit",
+    "d1:migrate": "wrangler d1 migrations apply tuhorafacil --local",
+    "d1:migrate:remote": "wrangler d1 migrations apply tuhorafacil --remote",
+    "d1:seed": "wrangler d1 execute tuhorafacil --local --file ../../packages/db/seed.sql",
+    "d1:seed:remote": "wrangler d1 execute tuhorafacil --remote --file ../../packages/db/seed.sql"
+  },
+  "dependencies": {
+    "@tuhorafacil/db": "workspace:*",
+    "hono": "^4.8.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.2",
+    "typescript": "^5.8.3",
+    "wrangler": "^4.107.0"
+  }
+}

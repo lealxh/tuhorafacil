@@ -1,0 +1,138 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+
+Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
+
+**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
+
+## 1. Think Before Coding
+
+**Don't assume. Don't hide confusion. Surface tradeoffs.**
+
+Before implementing:
+- State your assumptions explicitly. If uncertain, ask.
+- If multiple interpretations exist, present them - don't pick silently.
+- If a simpler approach exists, say so. Push back when warranted.
+- If something is unclear, stop. Name what's confusing. Ask.
+
+## 2. Simplicity First
+
+**Minimum code that solves the problem. Nothing speculative.**
+
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- No "flexibility" or "configurability" that wasn't requested.
+- No error handling for impossible scenarios.
+- If you write 200 lines and it could be 50, rewrite it.
+
+Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+
+## 3. Surgical Changes
+
+**Touch only what you must. Clean up only your own mess.**
+
+When editing existing code:
+- Don't "improve" adjacent code, comments, or formatting.
+- Don't refactor things that aren't broken.
+- Match existing style, even if you'd do it differently.
+- If you notice unrelated dead code, mention it - don't delete it.
+
+When your changes create orphans:
+- Remove imports/variables/functions that YOUR changes made unused.
+- Don't remove pre-existing dead code unless asked.
+
+The test: Every changed line should trace directly to the user's request.
+
+## 4. Goal-Driven Execution
+
+**Define success criteria. Loop until verified.**
+
+Transform tasks into verifiable goals:
+- "Add validation" → "Write tests for invalid inputs, then make them pass"
+- "Fix the bug" → "Write a test that reproduces it, then make it pass"
+- "Refactor X" → "Ensure tests pass before and after"
+
+For multi-step tasks, state a brief plan:
+```
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+3. [Step] → verify: [check]
+```
+
+Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+
+---
+**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+
+## Project state
+
+pnpm monorepo targeting a live demo in October 2026. Fase 0 (foundations) is done; Fase 1 (auth, CRUD, scheduling engine, calendar UI) is next. Source-of-truth docs (in Spanish):
+
+- `01-requerimientos-funcionales.md` — functional requirements, tiers, MVP scope
+- `02-especificaciones-tecnicas2.md` — architecture, data model, build order
+- `03-plan-de-trabajo.md` — week-by-week work plan (source of truth for schedule and milestones); also captures the approved UI design decisions and design tokens from the claude.ai/design mock (`Tuhorafacil.dc.html`)
+
+## Layout and commands
+
+- `apps/web` — SvelteKit (Svelte 5 runes) + Tailwind v4 + adapter-cloudflare, deployed as a Cloudflare Worker with static assets. Design tokens live in `src/routes/layout.css` (`@theme`). Adapter is configured in `vite.config.ts` (no svelte.config.js in this template).
+- `apps/api` — Hono on Cloudflare Workers. `wrangler types` generates `Env` (run via `pnpm check`). D1 binding `DB` (database `tuhorafacil`), migrations_dir points at `packages/db/drizzle`.
+- `packages/db` — Drizzle schema (`src/schema.ts`, sqlite-core, Spanish table/column names per spec §2.3), `createDb(env.DB)` via `drizzle-orm/d1`, migrations in `drizzle/`, seed in `seed.sql` (fixed UUIDs, idempotent).
+
+```bash
+pnpm install
+pnpm -r check          # types (svelte-check, tsc, wrangler types)
+pnpm -r test           # vitest
+pnpm -r build          # web: vite build; api: wrangler deploy --dry-run
+pnpm db:generate       # drizzle-kit generate (after schema changes)
+pnpm db:migrate        # apply to local D1 (miniflare); :remote variant for prod
+pnpm db:seed           # idempotent; :remote variant for prod
+pnpm --filter @tuhorafacil/web dev    # localhost:5173
+pnpm --filter @tuhorafacil/api dev    # localhost:8787
+```
+
+Run a single test: `pnpm --filter @tuhorafacil/web test:unit -- --run path/to/file.spec.ts`.
+
+CI (`.github/workflows/deploy.yml`) runs check+test+build on every push/PR; on `main` it applies D1 migrations and deploys both Workers (needs `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` secrets).
+
+## What this is
+
+A scheduling app for independent hairstylists (estilistas) in Chile. The core product is an AI agent connected to the stylist's own WhatsApp number that answers clients and books appointments automatically. The stylist manages everything from a responsive web dashboard. Three subscription tiers gate features: **Agenda** (calendar + public booking page), **Recepcionista** (+ WhatsApp AI agent), **Pro** (+ automated reminders and campaigns).
+
+Domain language is Spanish (estilista, clienta, cita, horario, bloqueo); the data model and specs use Spanish names — keep code identifiers consistent with the schema in the tech spec (section 2.3).
+
+## Planned stack (decided — do not substitute)
+
+| Layer | Choice |
+|---|---|
+| Frontend/SSR | SvelteKit + `@sveltejs/adapter-cloudflare` + Tailwind, on Cloudflare Pages |
+| API + webhook | Hono.js on Cloudflare Workers |
+| Database | Cloudflare D1 (SQLite) + Drizzle ORM — decided 2026-07-05, replacing the spec's original Neon/Postgres choice |
+| Auth | Lucia Auth (JWT, email+password) |
+| LLM | Anthropic API, Claude Haiku with strict tool use |
+| Scheduled jobs | Cloudflare Cron Triggers (no Redis, no queues) |
+
+## Architecture principles (from the tech spec)
+
+- **The own database is the single source of truth** for availability and appointments. The agent, dashboard, and public booking page all read/write through the same scheduling engine. Google Calendar is roadmap-only export.
+- **The scheduling engine is deterministic pure logic.** The LLM never computes availability — it only calls tools: `consultar_disponibilidad`, `crear_cita`, `reagendar_cita`, `cancelar_cita`, `escalar_a_estilista`. Backend validation prevents double-booking regardless of what the LLM does. D1 has no interactive transactions — `crear_cita` must prevent double-booking via a conflict check and insert in a single `batch()`/statement (D1 is single-writer, so a batch is atomic).
+- **WhatsApp model: Tech Provider + Coexistence + Embedded Signup.** The platform registers with Meta as Tech Provider; each stylist connects her own existing number via Embedded Signup from the dashboard. Coexistence means her phone keeps working — the webhook must detect her outgoing messages and put the conversation in cooldown to avoid duplicate replies.
+- **Webhook pattern:** Meta requires a response in <5s. Return `200 OK` immediately and process the agent via `c.executionCtx.waitUntil()`.
+- **Metering from day one** is a business requirement: record LLM tokens and Meta conversation costs per account (`consumo_mensual`). Tier limits pause the agent with a friendly message when exhausted.
+- **Conversation history is persisted per client** (`conversaciones`/`mensajes`) and replayed to the LLM on each call; trim to the last N messages and cache the system prompt to control cost.
+- **Tier gating is data-driven** via the `tiers` table (`tiene_agente`, `tiene_recordatorios`, `tiene_campanas`) — not hardcoded per feature.
+
+## Build order (spec section 4)
+
+1. **Fase 1 — data core:** Cloudflare setup, auth + tiers, CRUD servicios/horarios, scheduling engine, dashboard calendar.
+2. **Fase 2 — the agent:** Embedded Signup handler, WhatsApp webhook, tool-use agent, metering. End of Fase 2 = the October demo flow works end to end.
+3. **Fase 3 — launch:** public booking page (`/@slug`), reminders via Cron Triggers, agent config UI, usage display, basic admin panel.
+
+Out of MVP scope (do not build): payments, SII invoicing, campaign UI, Google Calendar export, client CRM, native mobile app.
+
+## Non-code constraints worth knowing
+
+- Meta processes (Tech Provider verification, Embedded Signup review, template approval) have multi-week lead times independent of development.
+- Cloudflare Workers paid plan is assumed (30s CPU limit needed for LLM calls; the free 10ms limit is insufficient).
+- Conversations contain end-client personal data — a retention policy must exist before launch.

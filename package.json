@@ -1,0 +1,15 @@
+{
+  "name": "tuhorafacil",
+  "private": true,
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "check": "pnpm -r check",
+    "db:generate": "pnpm --filter @tuhorafacil/db generate",
+    "db:migrate": "pnpm --filter @tuhorafacil/api d1:migrate",
+    "db:migrate:remote": "pnpm --filter @tuhorafacil/api d1:migrate:remote",
+    "db:seed": "pnpm --filter @tuhorafacil/api d1:seed",
+    "db:seed:remote": "pnpm --filter @tuhorafacil/api d1:seed:remote"
+  },
+  "packageManager": "pnpm@11.10.0"
+}

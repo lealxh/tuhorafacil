@@ -1,0 +1,22 @@
+{
+  "name": "@tuhorafacil/db",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema.ts"
+  },
+  "scripts": {
+    "generate": "drizzle-kit generate",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.44.2"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260701.0",
+    "drizzle-kit": "^0.31.4",
+    "typescript": "^5.8.3"
+  }
+}

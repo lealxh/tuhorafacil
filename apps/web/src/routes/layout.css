@@ -1,0 +1,29 @@
+@import '@fontsource-variable/onest';
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+
+/* Design tokens del mock aprobado (Tuhorafacil.dc.html) */
+@theme {
+	--font-sans: 'Onest Variable', system-ui, sans-serif;
+
+	--color-primary: #d97f6a;
+	--color-primary-light: #e0937e;
+	--color-background: #fcf0eb;
+	--color-surface: #fcf6f3;
+	--color-ink: #3e2c2a;
+	--color-ink-soft: #a08581;
+	--color-ink-faint: #c0a69f;
+	--color-blush: #fbeae3;
+	--color-blush-deep: #c56a52;
+	--color-line: #f1e2dc;
+	--color-success: #5fbe8e;
+
+	--radius-field: 0.875rem; /* inputs y botones: 14px */
+	--radius-card: 1.25rem; /* cards y sheets: 20px */
+}
+
+body {
+	background-color: var(--color-background);
+	color: var(--color-ink);
+	-webkit-font-smoothing: antialiased;
+}

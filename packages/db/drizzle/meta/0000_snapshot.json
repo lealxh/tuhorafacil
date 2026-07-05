@@ -1,0 +1,1037 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "0e79adae-64a5-43cc-b8ae-853b8f53537d",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "tables": {
+    "bloqueos": {
+      "name": "bloqueos",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estilista_id": {
+          "name": "estilista_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "fecha_inicio": {
+          "name": "fecha_inicio",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "fecha_fin": {
+          "name": "fecha_fin",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "motivo": {
+          "name": "motivo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "bloqueos_estilista_idx": {
+          "name": "bloqueos_estilista_idx",
+          "columns": [
+            "estilista_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "bloqueos_estilista_id_estilistas_id_fk": {
+          "name": "bloqueos_estilista_id_estilistas_id_fk",
+          "tableFrom": "bloqueos",
+          "tableTo": "estilistas",
+          "columnsFrom": [
+            "estilista_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "citas": {
+      "name": "citas",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estilista_id": {
+          "name": "estilista_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "clienta_id": {
+          "name": "clienta_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "servicio_id": {
+          "name": "servicio_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "fecha": {
+          "name": "fecha",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "hora_inicio": {
+          "name": "hora_inicio",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "hora_fin": {
+          "name": "hora_fin",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'confirmada'"
+        },
+        "origen": {
+          "name": "origen",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "citas_estilista_fecha_idx": {
+          "name": "citas_estilista_fecha_idx",
+          "columns": [
+            "estilista_id",
+            "fecha"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "citas_estilista_id_estilistas_id_fk": {
+          "name": "citas_estilista_id_estilistas_id_fk",
+          "tableFrom": "citas",
+          "tableTo": "estilistas",
+          "columnsFrom": [
+            "estilista_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "citas_clienta_id_clientas_finales_id_fk": {
+          "name": "citas_clienta_id_clientas_finales_id_fk",
+          "tableFrom": "citas",
+          "tableTo": "clientas_finales",
+          "columnsFrom": [
+            "clienta_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "citas_servicio_id_servicios_id_fk": {
+          "name": "citas_servicio_id_servicios_id_fk",
+          "tableFrom": "citas",
+          "tableTo": "servicios",
+          "columnsFrom": [
+            "servicio_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "clientas_finales": {
+      "name": "clientas_finales",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estilista_id": {
+          "name": "estilista_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "telefono": {
+          "name": "telefono",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "notas": {
+          "name": "notas",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "clientas_estilista_telefono_idx": {
+          "name": "clientas_estilista_telefono_idx",
+          "columns": [
+            "estilista_id",
+            "telefono"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "clientas_finales_estilista_id_estilistas_id_fk": {
+          "name": "clientas_finales_estilista_id_estilistas_id_fk",
+          "tableFrom": "clientas_finales",
+          "tableTo": "estilistas",
+          "columnsFrom": [
+            "estilista_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "config_agente": {
+      "name": "config_agente",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estilista_id": {
+          "name": "estilista_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "personalidad": {
+          "name": "personalidad",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'cercana'"
+        },
+        "msg_bienvenida": {
+          "name": "msg_bienvenida",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "instrucciones": {
+          "name": "instrucciones",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "info_extra": {
+          "name": "info_extra",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "activo": {
+          "name": "activo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        }
+      },
+      "indexes": {
+        "config_agente_estilista_id_unique": {
+          "name": "config_agente_estilista_id_unique",
+          "columns": [
+            "estilista_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "config_agente_estilista_id_estilistas_id_fk": {
+          "name": "config_agente_estilista_id_estilistas_id_fk",
+          "tableFrom": "config_agente",
+          "tableTo": "estilistas",
+          "columnsFrom": [
+            "estilista_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "consumo_mensual": {
+      "name": "consumo_mensual",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estilista_id": {
+          "name": "estilista_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "mes": {
+          "name": "mes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "mensajes_agente": {
+          "name": "mensajes_agente",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "tokens_entrada": {
+          "name": "tokens_entrada",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "tokens_salida": {
+          "name": "tokens_salida",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "conversaciones_meta": {
+          "name": "conversaciones_meta",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "citas_creadas": {
+          "name": "citas_creadas",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "costo_estimado_usd": {
+          "name": "costo_estimado_usd",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        }
+      },
+      "indexes": {
+        "consumo_estilista_mes_idx": {
+          "name": "consumo_estilista_mes_idx",
+          "columns": [
+            "estilista_id",
+            "mes"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "consumo_mensual_estilista_id_estilistas_id_fk": {
+          "name": "consumo_mensual_estilista_id_estilistas_id_fk",
+          "tableFrom": "consumo_mensual",
+          "tableTo": "estilistas",
+          "columnsFrom": [
+            "estilista_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "conversaciones": {
+      "name": "conversaciones",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estilista_id": {
+          "name": "estilista_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "clienta_id": {
+          "name": "clienta_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ultimo_mensaje_at": {
+          "name": "ultimo_mensaje_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'activa'"
+        }
+      },
+      "indexes": {
+        "conversaciones_estilista_clienta_idx": {
+          "name": "conversaciones_estilista_clienta_idx",
+          "columns": [
+            "estilista_id",
+            "clienta_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "conversaciones_estilista_id_estilistas_id_fk": {
+          "name": "conversaciones_estilista_id_estilistas_id_fk",
+          "tableFrom": "conversaciones",
+          "tableTo": "estilistas",
+          "columnsFrom": [
+            "estilista_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "conversaciones_clienta_id_clientas_finales_id_fk": {
+          "name": "conversaciones_clienta_id_clientas_finales_id_fk",
+          "tableFrom": "conversaciones",
+          "tableTo": "clientas_finales",
+          "columnsFrom": [
+            "clienta_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "estilistas": {
+      "name": "estilistas",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "password_hash": {
+          "name": "password_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tier_id": {
+          "name": "tier_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'activa'"
+        },
+        "slug_publico": {
+          "name": "slug_publico",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nombre_negocio": {
+          "name": "nombre_negocio",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "wa_phone_number_id": {
+          "name": "wa_phone_number_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "wa_waba_id": {
+          "name": "wa_waba_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "wa_access_token_enc": {
+          "name": "wa_access_token_enc",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "wa_estado": {
+          "name": "wa_estado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'desconectado'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "estilistas_email_unique": {
+          "name": "estilistas_email_unique",
+          "columns": [
+            "email"
+          ],
+          "isUnique": true
+        },
+        "estilistas_slug_publico_unique": {
+          "name": "estilistas_slug_publico_unique",
+          "columns": [
+            "slug_publico"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "estilistas_tier_id_tiers_id_fk": {
+          "name": "estilistas_tier_id_tiers_id_fk",
+          "tableFrom": "estilistas",
+          "tableTo": "tiers",
+          "columnsFrom": [
+            "tier_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "horarios": {
+      "name": "horarios",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estilista_id": {
+          "name": "estilista_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "dia_semana": {
+          "name": "dia_semana",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "hora_inicio": {
+          "name": "hora_inicio",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "hora_fin": {
+          "name": "hora_fin",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "horarios_estilista_idx": {
+          "name": "horarios_estilista_idx",
+          "columns": [
+            "estilista_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "horarios_estilista_id_estilistas_id_fk": {
+          "name": "horarios_estilista_id_estilistas_id_fk",
+          "tableFrom": "horarios",
+          "tableTo": "estilistas",
+          "columnsFrom": [
+            "estilista_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "mensajes": {
+      "name": "mensajes",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "conversacion_id": {
+          "name": "conversacion_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "rol": {
+          "name": "rol",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "contenido": {
+          "name": "contenido",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tokens_entrada": {
+          "name": "tokens_entrada",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tokens_salida": {
+          "name": "tokens_salida",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "mensajes_conversacion_idx": {
+          "name": "mensajes_conversacion_idx",
+          "columns": [
+            "conversacion_id",
+            "timestamp"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "mensajes_conversacion_id_conversaciones_id_fk": {
+          "name": "mensajes_conversacion_id_conversaciones_id_fk",
+          "tableFrom": "mensajes",
+          "tableTo": "conversaciones",
+          "columnsFrom": [
+            "conversacion_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "plantillas_wa": {
+      "name": "plantillas_wa",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "wa_template_id": {
+          "name": "wa_template_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "idioma": {
+          "name": "idioma",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'es'"
+        },
+        "parametros_json": {
+          "name": "parametros_json",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "plantillas_wa_nombre_unique": {
+          "name": "plantillas_wa_nombre_unique",
+          "columns": [
+            "nombre"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "servicios": {
+      "name": "servicios",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estilista_id": {
+          "name": "estilista_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "descripcion": {
+          "name": "descripcion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "duracion_min": {
+          "name": "duracion_min",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "precio": {
+          "name": "precio",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "activo": {
+          "name": "activo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        }
+      },
+      "indexes": {
+        "servicios_estilista_idx": {
+          "name": "servicios_estilista_idx",
+          "columns": [
+            "estilista_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "servicios_estilista_id_estilistas_id_fk": {
+          "name": "servicios_estilista_id_estilistas_id_fk",
+          "tableFrom": "servicios",
+          "tableTo": "estilistas",
+          "columnsFrom": [
+            "estilista_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "tiers": {
+      "name": "tiers",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "precio_usd": {
+          "name": "precio_usd",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "limite_mensajes_mes": {
+          "name": "limite_mensajes_mes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tiene_agente": {
+          "name": "tiene_agente",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "tiene_recordatorios": {
+          "name": "tiene_recordatorios",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "tiene_campanas": {
+          "name": "tiene_campanas",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        }
+      },
+      "indexes": {
+        "tiers_nombre_unique": {
+          "name": "tiers_nombre_unique",
+          "columns": [
+            "nombre"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}
