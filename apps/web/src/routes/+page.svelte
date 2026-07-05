@@ -9,5 +9,11 @@
 		<p class="text-ink-soft mt-2 text-sm">
 			Tu agenda se maneja sola. Muy pronto para estilistas independientes.
 		</p>
+		<a
+			href="/login"
+			class="rounded-field from-primary to-primary-light shadow-primary/40 mt-5 block bg-gradient-to-br px-4 py-3 text-sm font-bold text-white shadow-lg transition active:scale-[.98]"
+		>
+			Entrar a mi agenda
+		</a>
 	</div>
 </main>

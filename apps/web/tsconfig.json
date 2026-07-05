@@ -3,7 +3,9 @@
 	"compilerOptions": {
 		"rewriteRelativeImportExtensions": true,
 		"allowJs": true,
-		"checkJs": true,
+		// checkJs desactivado: worker-configuration.d.ts referencia el _worker.js compilado
+		// (Cloudflare.GlobalProps.mainModule) y con checkJs se type-checkean los chunks del build
+		"checkJs": false,
 		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true,
 		"resolveJsonModule": true,

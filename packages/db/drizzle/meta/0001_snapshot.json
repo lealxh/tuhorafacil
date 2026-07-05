@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "9993ff4b-0e2f-4c8a-9e3f-ef8e8ea92d68",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "225d7cb8-80c1-480f-991b-4ca52f6e429b",
+  "prevId": "9993ff4b-0e2f-4c8a-9e3f-ef8e8ea92d68",
   "tables": {
     "bloqueos": {
       "name": "bloqueos",
@@ -587,6 +587,20 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "rubro": {
+          "name": "rubro",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "comuna": {
+          "name": "comuna",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "wa_phone_number_id": {

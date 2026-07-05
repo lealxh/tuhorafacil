@@ -27,3 +27,10 @@ body {
 	color: var(--color-ink);
 	-webkit-font-smoothing: antialiased;
 }
+
+/* Los inputs son flex-items en varios forms: sin esto su min-width
+   intrínseco (notorio en time/number en Android) desborda la pantalla */
+input,
+select {
+	min-width: 0;
+}

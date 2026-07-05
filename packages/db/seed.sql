@@ -7,9 +7,14 @@ INSERT OR IGNORE INTO tiers (id, nombre, precio_usd, limite_mensajes_mes, tiene_
   ('11111111-0000-4000-8000-000000000002', 'recepcionista', 30, 500, 1, 0, 0),
   ('11111111-0000-4000-8000-000000000003', 'pro', 55, 500, 1, 1, 1);
 
--- Placeholder de password: el hashing real llega con auth en Fase 1; esta cuenta no puede iniciar sesión
-INSERT OR IGNORE INTO estilistas (id, nombre, email, password_hash, tier_id, estado, slug_publico, nombre_negocio, wa_estado, created_at) VALUES
-  ('22222222-0000-4000-8000-000000000001', 'Camila', 'camila@demo.tuhorafacil.cl', 'SIN_LOGIN_SEED',
+-- Usuario de better-auth sin fila en account (sin password): no puede iniciar sesión.
+-- Para entrar como demo, registrarse desde la app con otro email.
+INSERT OR IGNORE INTO user (id, name, email, email_verified, created_at, updated_at) VALUES
+  ('77777777-0000-4000-8000-000000000001', 'Camila', 'camila@demo.tuhorafacil.cl', 1,
+   unixepoch() * 1000, unixepoch() * 1000);
+
+INSERT OR IGNORE INTO estilistas (id, user_id, nombre, tier_id, estado, slug_publico, nombre_negocio, wa_estado, created_at) VALUES
+  ('22222222-0000-4000-8000-000000000001', '77777777-0000-4000-8000-000000000001', 'Camila',
    '11111111-0000-4000-8000-000000000002', 'activa', 'salonregias', 'Salón Regias', 'desconectado',
    unixepoch() * 1000);
 

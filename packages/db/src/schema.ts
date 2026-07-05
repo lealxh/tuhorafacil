@@ -1,4 +1,5 @@
 import { index, integer, real, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { user } from './auth-schema';
 
 const uuid = () =>
   text('id')
@@ -19,15 +20,20 @@ export const tiers = sqliteTable('tiers', {
 
 export const estilistas = sqliteTable('estilistas', {
   id: uuid(),
+  // Credenciales (email/password) viven en las tablas de better-auth
+  userId: text('user_id')
+    .notNull()
+    .unique()
+    .references(() => user.id, { onDelete: 'cascade' }),
   nombre: text('nombre').notNull(),
-  email: text('email').notNull().unique(),
-  passwordHash: text('password_hash').notNull(),
   tierId: text('tier_id')
     .notNull()
     .references(() => tiers.id),
   estado: text('estado', { enum: ['activa', 'pausada'] }).notNull().default('activa'),
   slugPublico: text('slug_publico').notNull().unique(),
   nombreNegocio: text('nombre_negocio').notNull(),
+  rubro: text('rubro'),
+  comuna: text('comuna'),
   waPhoneNumberId: text('wa_phone_number_id'),
   waWabaId: text('wa_waba_id'),
   waAccessTokenEnc: text('wa_access_token_enc'),

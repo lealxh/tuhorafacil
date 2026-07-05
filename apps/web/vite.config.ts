@@ -11,7 +11,10 @@ export default defineConfig({
 				// Force runes mode for the project, except for libraries. Can be removed in svelte 6.
 				runes: ({ filename }) => filename.split(/[/\\]/).includes('node_modules') ? undefined : true
 			},
-			adapter: adapter()
+			adapter: adapter({
+				// Comparte el estado local de D1 con apps/api (una sola BD en dev)
+				platformProxy: { persist: { path: '../api/.wrangler/state/v3' } }
+			})
 		})
 	],
 	test: {

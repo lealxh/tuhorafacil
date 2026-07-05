@@ -8,6 +8,16 @@
 		"binding": "ASSETS",
 		"directory": ".svelte-kit/cloudflare"
 	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "tuhorafacil",
+			"database_id": "b25d7de6-976d-446c-ab7d-564175494ae2"
+		}
+	],
+	"vars": {
+		"BETTER_AUTH_URL": "https://tuhorafacil-web.tuhorafacil.workers.dev"
+	},
 	"observability": {
 		"enabled": true,
 		"head_sampling_rate": 1
