@@ -1,4 +1,3 @@
-import { getAuth } from '$lib/server/auth';
 import { getDb } from '$lib/server/db';
 import { fechaLocalHoy, instanteLocal } from '@tuhorafacil/agenda';
 import {
@@ -16,7 +15,7 @@ import {
 	tiers
 } from '@tuhorafacil/db';
 import { redirect } from '@sveltejs/kit';
-import type { Actions, PageServerLoad } from './$types';
+import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
 	const { estilista } = await event.parent();
@@ -55,20 +54,19 @@ export const load: PageServerLoad = async (event) => {
 			.select({ n: sql<number>`count(*)` })
 			.from(citas)
 			.where(and(eq(citas.estilistaId, estilista.id), eq(citas.origen, 'agente'), gte(citas.createdAt, inicioDia)));
-		const [escaladas] = await db
-			.select({ n: sql<number>`count(*)` })
+		const escaladas = await db
+			.select({
+				id: conversaciones.id,
+				clienta: clientasFinales.nombre,
+				snippet: sql<string>`(SELECT contenido FROM mensajes WHERE conversacion_id = ${conversaciones.id} ORDER BY timestamp DESC LIMIT 1)`
+			})
 			.from(conversaciones)
-			.where(and(eq(conversaciones.estilistaId, estilista.id), eq(conversaciones.estado, 'escalada')));
-		agente = { mensajesHoy: mensajesHoy.n, citasHoy: citasAgenteHoy.n, escaladas: escaladas.n };
+			.innerJoin(clientasFinales, eq(conversaciones.clientaId, clientasFinales.id))
+			.where(and(eq(conversaciones.estilistaId, estilista.id), eq(conversaciones.estado, 'escalada')))
+			.limit(4);
+		agente = { mensajesHoy: mensajesHoy.n, citasHoy: citasAgenteHoy.n, escaladas };
 	}
 
 	return { hoy, citasHoy, agente };
 };
 
-export const actions: Actions = {
-	logout: async (event) => {
-		const auth = getAuth(event.platform!.env);
-		await auth.api.signOut({ headers: event.request.headers });
-		redirect(303, '/login');
-	}
-};

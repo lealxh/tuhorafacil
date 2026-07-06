@@ -17,8 +17,23 @@
 
 <svelte:head><title>Mi agente · tuhorafácil</title></svelte:head>
 
-<main class="flex flex-col gap-4 p-6">
-	<div>
+{#snippet statTiles(clase: string)}
+	<div class="{clase} gap-2.5">
+		<div class="rounded-card flex-1 bg-white px-4 py-3 shadow-sm">
+			<p class="text-lg font-bold">
+				{data.consumo?.mensajesAgente ?? 0}<span class="text-ink-faint text-xs font-medium">{data.limiteMensajes ? ` / ${data.limiteMensajes}` : ''}</span>
+			</p>
+			<p class="text-ink-soft text-[11px]">mensajes este mes</p>
+		</div>
+		<div class="rounded-card flex-1 bg-white px-4 py-3 shadow-sm">
+			<p class="text-success text-lg font-bold">{data.consumo?.citasCreadas ?? 0}</p>
+			<p class="text-ink-soft text-[11px]">citas agendadas</p>
+		</div>
+	</div>
+{/snippet}
+
+<main class="flex flex-col gap-4 p-6 lg:p-8">
+	<div class="lg:hidden">
 		<h1 class="text-2xl font-bold tracking-tight">Mi agente</h1>
 		<p class="text-ink-soft mt-0.5 text-sm">Responde tus WhatsApp y agenda por ti.</p>
 	</div>
@@ -33,6 +48,8 @@
 			<a href="/app/plan" class="text-blush-deep text-sm font-bold">Ver planes ›</a>
 		</div>
 	{:else}
+		<div class="contents lg:grid lg:grid-cols-[1fr_320px] lg:items-start lg:gap-6">
+		<div class="contents lg:flex lg:min-w-0 lg:flex-col lg:gap-4">
 		<!-- Estado + toggle -->
 		<div
 			class="rounded-card flex items-center gap-3.5 p-4 shadow-sm {activo && waConectado
@@ -80,19 +97,7 @@
 			</form>
 		</div>
 
-		<!-- Stats del mes -->
-		<div class="flex gap-2.5">
-			<div class="rounded-card flex-1 bg-white px-4 py-3 shadow-sm">
-				<p class="text-lg font-bold">
-					{data.consumo?.mensajesAgente ?? 0}<span class="text-ink-faint text-xs font-medium">{data.limiteMensajes ? ` / ${data.limiteMensajes}` : ''}</span>
-				</p>
-				<p class="text-ink-soft text-[11px]">mensajes este mes</p>
-			</div>
-			<div class="rounded-card flex-1 bg-white px-4 py-3 shadow-sm">
-				<p class="text-success text-lg font-bold">{data.consumo?.citasCreadas ?? 0}</p>
-				<p class="text-ink-soft text-[11px]">citas agendadas</p>
-			</div>
-		</div>
+		{@render statTiles('flex lg:hidden')}
 
 		<!-- Personalidad -->
 		<div>
@@ -135,6 +140,10 @@
 			{#if form && 'guardado' in form}<p class="text-success text-xs font-semibold">Guardado ✓</p>{/if}
 			<button type="submit" class="rounded-field bg-blush text-blush-deep px-4 py-2.5 text-sm font-bold">Guardar</button>
 		</form>
+		</div>
+
+		<div class="contents lg:flex lg:flex-col lg:gap-4">
+		{@render statTiles('hidden lg:flex')}
 
 		<!-- Escalados -->
 		<div class="flex items-center justify-between">
@@ -167,17 +176,19 @@
 				</p>
 			{/each}
 		</div>
+		</div>
+		</div>
 	{/if}
 </main>
 
 {#if escaladaSel}
 	<div
-		class="fixed inset-0 z-40 flex items-end bg-[rgba(40,20,18,.4)]"
+		class="fixed inset-0 z-40 flex items-end lg:items-center lg:justify-center lg:p-6 bg-[rgba(40,20,18,.4)]"
 		onclick={(e) => e.target === e.currentTarget && (escaladaSel = null)}
 		onkeydown={(e) => e.key === 'Escape' && (escaladaSel = null)}
 		role="presentation"
 	>
-		<div class="bg-background w-full rounded-t-[28px] px-6 pt-2.5 pb-8">
+		<div class="bg-background w-full rounded-t-[28px] px-6 pt-2.5 pb-8 lg:max-w-md lg:rounded-[28px] lg:pb-6">
 			<div class="mx-auto mb-4 h-1.5 w-10 rounded-full bg-[#E0C4B8]"></div>
 			<h2 class="text-xl font-bold tracking-tight">{escaladaSel.clienta}</h2>
 			<p class="text-ink-soft mt-0.5 text-xs">Escalado por tu agente</p>

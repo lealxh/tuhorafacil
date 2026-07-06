@@ -9,7 +9,9 @@
 	const DOWS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 	const PX_POR_MIN = 54 / 60;
 
-	let sheet: 'nueva' | 'bloquear' | null = $state(null);
+	import { page } from '$app/state';
+
+	let sheet: 'nueva' | 'bloquear' | null = $state(page.url.searchParams.has('nueva') ? 'nueva' : null);
 	let citaSel: (typeof data.citas)[number] | null = $state(null);
 	let bloqueoSel: (typeof data.bloqueos)[number] | null = $state(null);
 
@@ -86,20 +88,21 @@
 
 <svelte:head><title>Calendario · tuhorafácil</title></svelte:head>
 
-<main class="flex flex-col gap-4 py-6">
-	<div class="flex items-center justify-between px-6">
-		<h1 class="text-[22px] font-bold tracking-tight">{tituloMes}</h1>
-		<div class="flex gap-1.5">
-			<a href={link(data.vista, mover(-1))} aria-label="Anterior" class="text-ink-soft flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm">‹</a>
-			<a href={link(data.vista, mover(1))} aria-label="Siguiente" class="text-ink-soft flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm">›</a>
+<main class="flex flex-col gap-4 py-6 lg:mx-auto lg:w-full lg:max-w-3xl lg:py-8">
+	<div class="contents lg:flex lg:items-center lg:justify-between lg:px-6">
+	<div class="flex items-center justify-between px-6 lg:gap-3 lg:px-0">
+		<h1 class="text-[22px] font-bold tracking-tight lg:order-2 lg:text-[15px] lg:font-semibold">{tituloMes}</h1>
+		<div class="flex gap-1.5 lg:order-1">
+			<a href={link(data.vista, mover(-1))} aria-label="Anterior" class="text-ink-soft flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm lg:h-8 lg:w-8">‹</a>
+			<a href={link(data.vista, mover(1))} aria-label="Siguiente" class="text-ink-soft flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm lg:h-8 lg:w-8">›</a>
 		</div>
 	</div>
 
-	<div class="mx-6 flex gap-1 rounded-2xl bg-[#F3E4DE] p-1">
+	<div class="mx-6 flex gap-1 rounded-2xl bg-[#F3E4DE] p-1 lg:mx-0">
 		{#each [['dia', 'Día'], ['semana', 'Semana'], ['mes', 'Mes']] as [vista, etiqueta] (vista)}
 			<a
 				href={link(vista, data.fecha)}
-				class="flex-1 rounded-[13px] py-2 text-center text-[13px] font-semibold {data.vista === vista
+				class="flex-1 rounded-[13px] py-2 text-center text-[13px] font-semibold lg:flex-none lg:px-5 {data.vista === vista
 					? 'text-ink bg-white shadow-sm'
 					: 'text-ink-soft'}"
 			>
@@ -107,9 +110,10 @@
 			</a>
 		{/each}
 	</div>
+	</div>
 
 	{#if data.vista === 'dia'}
-		<div class="px-6">
+		<div class="px-6 lg:rounded-[20px] lg:bg-white lg:p-6 lg:shadow-sm">
 			<p class="text-ink-soft mb-3 text-[13px] font-semibold">
 				{tituloDia} · <span class="text-primary">{data.citas.length} {data.citas.length === 1 ? 'cita' : 'citas'}</span>
 			</p>
@@ -142,7 +146,56 @@
 			</div>
 		</div>
 	{:else if data.vista === 'semana'}
-		<div class="px-4">
+		<!-- Semana desktop: grilla horaria de 7 columnas (como el mock) -->
+		<div class="mx-6 hidden rounded-[20px] bg-white p-5 shadow-sm lg:mx-0 lg:block">
+			<div class="mb-3 flex pl-[52px]">
+				{#each diasSemana as dia (dia.fecha)}
+					<a href={link('dia', dia.fecha)} class="flex flex-1 flex-col items-center gap-1">
+						<span class="text-ink-soft text-[11px] font-semibold">{DOWS[(diaSemanaDe(dia.fecha) + 6) % 7]}</span>
+						<span
+							class="flex h-[30px] w-[30px] items-center justify-center rounded-full text-[13.5px] font-bold {dia.fecha === data.hoy
+								? 'from-primary to-primary-light bg-gradient-to-br text-white'
+								: ''}"
+						>
+							{dia.num}
+						</span>
+					</a>
+				{/each}
+			</div>
+			<div class="flex">
+				<div class="relative w-[52px] flex-none" style="height:{altoDia}px">
+					{#each Array.from({ length: horaHasta - horaDesde + 1 }, (_, i) => horaDesde + i) as hora (hora)}
+						<p class="text-ink-faint absolute text-[10.5px] font-semibold" style="top:{(hora - horaDesde) * 54 - 6}px">
+							{String(hora).padStart(2, '0')}:00
+						</p>
+					{/each}
+				</div>
+				<div class="flex flex-1 gap-1.5">
+					{#each diasSemana as dia (dia.fecha)}
+						<div
+							class="relative flex-1 rounded-[10px]"
+							style="height:{altoDia}px;background:repeating-linear-gradient(#F1E4DD 0 1px,transparent 1px 54px)"
+						>
+							{#each dia.citas as cita (cita.id)}
+								<button
+									onclick={() => (citaSel = cita)}
+									class="border-primary bg-blush absolute right-[3px] left-[3px] overflow-hidden rounded-lg border-l-[3px] px-1.5 py-1 text-left"
+									style="top:{topDe(cita.horaInicio)}px;height:{Math.max((aMinutos(cita.horaFin) - aMinutos(cita.horaInicio)) * PX_POR_MIN, 18)}px"
+								>
+									<p class="truncate text-[11px] font-semibold">{cita.clienta}</p>
+								</button>
+							{/each}
+						</div>
+					{/each}
+				</div>
+			</div>
+			<p class="text-ink-soft mt-4 text-center text-xs">
+				{data.citas.length} {data.citas.length === 1 ? 'cita' : 'citas'} esta semana
+				{#if citasAgente > 0}· <span class="text-primary font-semibold">{citasAgente} por tu agente</span>{/if}
+			</p>
+		</div>
+
+		<div class="px-4 lg:hidden">
 			<div class="flex gap-1.5">
 				{#each diasSemana as dia (dia.fecha)}
 					<a href={link('dia', dia.fecha)} class="flex flex-1 flex-col items-center gap-1.5">
@@ -171,7 +224,7 @@
 			</p>
 		</div>
 	{:else}
-		<div class="px-5">
+		<div class="px-5 lg:rounded-[20px] lg:bg-white lg:p-6 lg:shadow-sm">
 			<div class="mb-2 flex">
 				{#each DOWS as dow, i (i)}
 					<span class="text-ink-faint flex-1 text-center text-[10px] font-bold">{dow}</span>
@@ -182,7 +235,7 @@
 					{#if celda}
 						<a
 							href={link('dia', celda.fecha)}
-							class="flex aspect-square flex-col items-center justify-center gap-0.5 rounded-[11px] {celda.fecha === data.hoy
+							class="flex aspect-square flex-col items-center justify-center gap-0.5 rounded-[11px] lg:aspect-auto lg:min-h-[70px] lg:items-start lg:justify-start lg:p-2 {celda.fecha === data.hoy
 								? 'bg-blush'
 								: 'bg-white/60'}"
 						>
@@ -206,19 +259,19 @@
 <button
 	onclick={() => (sheet = 'nueva')}
 	aria-label="Nueva cita"
-	class="from-primary to-primary-light fixed right-5 bottom-24 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br pb-0.5 text-[28px] text-white shadow-[0_14px_28px_-8px_rgba(217,127,106,.7)]"
+	class="from-primary to-primary-light fixed right-5 bottom-24 z-30 flex h-14 w-14 lg:hidden items-center justify-center rounded-full bg-gradient-to-br pb-0.5 text-[28px] text-white shadow-[0_14px_28px_-8px_rgba(217,127,106,.7)]"
 >
 	+
 </button>
 
 {#if sheet || citaSel || bloqueoSel}
 	<div
-		class="fixed inset-0 z-40 flex items-end bg-[rgba(40,20,18,.4)]"
+		class="fixed inset-0 z-40 flex items-end lg:items-center lg:justify-center lg:p-6 bg-[rgba(40,20,18,.4)]"
 		onclick={(e) => e.target === e.currentTarget && cerrar()}
 		onkeydown={(e) => e.key === 'Escape' && cerrar()}
 		role="presentation"
 	>
-		<div class="bg-background w-full rounded-t-[28px] px-6 pt-2.5 pb-8">
+		<div class="bg-background w-full rounded-t-[28px] px-6 pt-2.5 pb-8 lg:max-w-md lg:rounded-[28px] lg:pb-6">
 			<div class="mx-auto mb-4 h-1.5 w-10 rounded-full bg-[#E0C4B8]"></div>
 
 			{#if sheet === 'nueva'}

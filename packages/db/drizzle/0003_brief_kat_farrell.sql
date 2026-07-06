@@ -1,0 +1,1 @@
+ALTER TABLE `estilistas` ADD `bio` text;

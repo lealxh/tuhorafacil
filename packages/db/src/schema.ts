@@ -34,6 +34,7 @@ export const estilistas = sqliteTable('estilistas', {
   nombreNegocio: text('nombre_negocio').notNull(),
   rubro: text('rubro'),
   comuna: text('comuna'),
+  bio: text('bio'),
   waPhoneNumberId: text('wa_phone_number_id'),
   waWabaId: text('wa_waba_id'),
   waAccessTokenEnc: text('wa_access_token_enc'),

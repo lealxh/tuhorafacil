@@ -8,8 +8,8 @@
 
 <svelte:head><title>Horarios · tuhorafácil</title></svelte:head>
 
-<main class="flex flex-col gap-4 p-6">
-	<div>
+<main class="flex flex-col gap-4 p-6 lg:mx-auto lg:w-full lg:max-w-2xl lg:p-8">
+	<div class="lg:hidden">
 		<a href="/app" class="text-ink-soft text-xs font-semibold">‹ Hoy</a>
 		<h1 class="mt-1 text-2xl font-bold tracking-tight">Horarios</h1>
 		<p class="text-ink-soft mt-0.5 text-sm">Tu disponibilidad semanal.</p>

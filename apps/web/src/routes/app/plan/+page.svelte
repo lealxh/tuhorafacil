@@ -23,12 +23,14 @@
 
 <svelte:head><title>Consumo · tuhorafácil</title></svelte:head>
 
-<main class="flex flex-col gap-4 p-6">
-	<div>
+<main class="flex flex-col gap-4 p-6 lg:p-8">
+	<div class="lg:hidden">
 		<h1 class="text-2xl font-bold tracking-tight">Consumo y plan</h1>
 		<p class="text-ink-soft mt-0.5 text-sm">Tu plan actual y el uso del mes.</p>
 	</div>
 
+	<div class="contents lg:grid lg:grid-cols-[1fr_300px] lg:items-start lg:gap-6">
+	<div class="contents lg:flex lg:min-w-0 lg:flex-col lg:gap-4">
 	<!-- Plan actual -->
 	{#if tierActual}
 		<div class="relative overflow-hidden rounded-[22px] bg-gradient-to-br from-[#3E2C2A] to-[#5A3F39] p-5 text-white shadow-[0_14px_28px_-12px_rgba(62,44,42,.5)]">
@@ -79,8 +81,11 @@
 		</div>
 	</div>
 
+	</div>
+
+	<div class="contents lg:flex lg:flex-col lg:gap-4">
 	<!-- Todos los planes -->
-	<h2 class="text-ink-soft mt-1 text-xs font-bold tracking-wider uppercase">Todos los planes</h2>
+	<h2 class="text-ink-soft mt-1 text-xs font-bold tracking-wider uppercase lg:mt-0">Todos los planes</h2>
 	<div class="flex flex-col gap-2.5">
 		{#each data.tiers as tier (tier.id)}
 			{@const actual = tier.id === data.tierActualId}
@@ -109,4 +114,6 @@
 	<p class="text-ink-faint text-center text-xs">
 		Durante el período de lanzamiento, los cambios de plan se coordinan con tu distribuidor.
 	</p>
+	</div>
+	</div>
 </main>

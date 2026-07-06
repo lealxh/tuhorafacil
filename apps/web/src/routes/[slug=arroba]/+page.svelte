@@ -32,6 +32,9 @@
 				{[data.negocio.rubro, data.negocio.comuna].filter(Boolean).join(' · ')}
 			</p>
 		{/if}
+		{#if data.negocio.bio}
+			<p class="text-ink mt-2.5 text-sm leading-relaxed">{data.negocio.bio}</p>
+		{/if}
 
 		<a
 			href={linkReserva()}
