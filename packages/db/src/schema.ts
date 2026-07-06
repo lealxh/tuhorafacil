@@ -204,6 +204,28 @@ export const consumoMensual = sqliteTable(
   (t) => [uniqueIndex('consumo_estilista_mes_idx').on(t.estilistaId, t.mes)],
 );
 
+export const suscripciones = sqliteTable(
+  'suscripciones',
+  {
+    id: uuid(),
+    estilistaId: text('estilista_id')
+      .notNull()
+      .references(() => estilistas.id, { onDelete: 'cascade' }),
+    tierId: text('tier_id')
+      .notNull()
+      .references(() => tiers.id),
+    // CLP: sin decimales. Monto cobrado en el cambio de plan
+    montoClp: integer('monto_clp').notNull(),
+    metodoPago: text('metodo_pago').notNull().default('mock_webpay'),
+    // 'pagado_mock' mientras la pasarela real no esté integrada
+    estado: text('estado').notNull().default('pagado_mock'),
+    createdAt: timestampMs('created_at')
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (t) => [index('suscripciones_estilista_idx').on(t.estilistaId)],
+);
+
 export const plantillasWa = sqliteTable('plantillas_wa', {
   id: uuid(),
   // Pre-aprobadas a nivel de plataforma (Tech Provider); sirven para todas las estilistas

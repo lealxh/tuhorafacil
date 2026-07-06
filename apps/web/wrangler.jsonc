@@ -16,7 +16,8 @@
 		}
 	],
 	"vars": {
-		"BETTER_AUTH_URL": "https://tuhorafacil-web.tuhorafacil.workers.dev"
+		"BETTER_AUTH_URL": "https://tuhorafacil-web.tuhorafacil.workers.dev",
+		"API_BASE_URL": "https://tuhorafacil-api.tuhorafacil.workers.dev"
 	},
 	"observability": {
 		"enabled": true,

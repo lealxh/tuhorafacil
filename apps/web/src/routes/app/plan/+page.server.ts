@@ -11,9 +11,13 @@ export const load: PageServerLoad = async (event) => {
 
 	return {
 		tierActualId: estilista.tierId,
+		exito: event.url.searchParams.get('exito') === '1',
 		tiers: await db.query.tiers.findMany({ orderBy: asc(tiers.precioUsd) }),
 		consumo: await db.query.consumoMensual.findFirst({
-			where: and(eq(consumoMensual.estilistaId, estilista.id), eq(consumoMensual.mes, fechaLocalHoy().slice(0, 7)))
+			where: and(
+				eq(consumoMensual.estilistaId, estilista.id),
+				eq(consumoMensual.mes, fechaLocalHoy().slice(0, 7))
+			)
 		})
 	};
 };

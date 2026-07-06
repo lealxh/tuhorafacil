@@ -157,7 +157,7 @@ async function manejarMensajeEntrante(env: Env, valor: CambioValor, mensaje: Men
   }
 }
 
-async function correrAgente(
+export async function correrAgente(
   env: Env,
   db: Db,
   estilista: typeof estilistas.$inferSelect,
@@ -252,7 +252,7 @@ function normalizarTelefono(waId: string): string {
   return waId.startsWith('+') ? waId : `+${waId}`;
 }
 
-async function registrarConsumo(
+export async function registrarConsumo(
   db: Db,
   estilistaId: string,
   mes: string,
