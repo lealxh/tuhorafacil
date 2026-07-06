@@ -33,6 +33,26 @@
 		</div>
 	</div>
 
+	{#if data.agente}
+		<a
+			href="/app/agente"
+			class="rounded-card from-primary to-primary-light flex items-center gap-3.5 bg-gradient-to-br p-4 text-white shadow-[0_12px_24px_-10px_rgba(217,127,106,.6)]"
+		>
+			<span class="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-white/20 text-lg">✨</span>
+			<span class="min-w-0 flex-1">
+				<span class="block text-sm font-semibold">Tu agente estuvo trabajando</span>
+				<span class="block text-xs text-white/90">
+					Respondió {data.agente.mensajesHoy}
+					{data.agente.mensajesHoy === 1 ? 'mensaje' : 'mensajes'} · agendó {data.agente.citasHoy}
+					{data.agente.citasHoy === 1 ? 'cita' : 'citas'} hoy{data.agente.escaladas
+						? ` · ${data.agente.escaladas} ${data.agente.escaladas === 1 ? 'escalado espera' : 'escalados esperan'} tu respuesta`
+						: ''}
+				</span>
+			</span>
+			<span class="text-lg opacity-85">›</span>
+		</a>
+	{/if}
+
 	<div class="flex gap-2.5">
 		<div class="rounded-card flex-1 bg-white px-4 py-3 shadow-sm">
 			<p class="text-primary text-xl font-bold">{confirmadas}</p>
