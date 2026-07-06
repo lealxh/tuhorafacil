@@ -1,0 +1,1 @@
+ALTER TABLE `conversaciones` ADD `agente_pausado_hasta` integer;

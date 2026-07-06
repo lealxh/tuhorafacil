@@ -1,6 +1,6 @@
 import { getAuth } from '$lib/server/auth';
 import { getDb } from '$lib/server/db';
-import { fechaLocalHoy } from '$lib/server/fechas';
+import { fechaLocalHoy } from '@tuhorafacil/agenda';
 import { and, asc, citas, clientasFinales, eq, ne, servicios } from '@tuhorafacil/db';
 import { redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';

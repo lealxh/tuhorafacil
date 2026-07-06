@@ -50,6 +50,11 @@ export function diaSemanaDe(fecha: string): number {
   return new Date(Date.UTC(y, m - 1, d)).getUTCDay();
 }
 
+export function sumarDias(fecha: string, dias: number): string {
+  const [y, m, d] = fecha.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d + dias)).toISOString().slice(0, 10);
+}
+
 export function diasEntre(desde: string, hasta: string): number {
   const [ay, am, ad] = desde.split('-').map(Number);
   const [by, bm, bd] = hasta.split('-').map(Number);

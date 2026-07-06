@@ -13,9 +13,10 @@ INSERT OR IGNORE INTO user (id, name, email, email_verified, created_at, updated
   ('77777777-0000-4000-8000-000000000001', 'Camila', 'camila@demo.tuhorafacil.cl', 1,
    unixepoch() * 1000, unixepoch() * 1000);
 
-INSERT OR IGNORE INTO estilistas (id, user_id, nombre, tier_id, estado, slug_publico, nombre_negocio, wa_estado, created_at) VALUES
+-- wa_phone_number_id DEMO_PHONE_ID: permite simular webhooks de Meta en desarrollo
+INSERT OR IGNORE INTO estilistas (id, user_id, nombre, tier_id, estado, slug_publico, nombre_negocio, wa_phone_number_id, wa_estado, created_at) VALUES
   ('22222222-0000-4000-8000-000000000001', '77777777-0000-4000-8000-000000000001', 'Camila',
-   '11111111-0000-4000-8000-000000000002', 'activa', 'salonregias', 'Salón Regias', 'desconectado',
+   '11111111-0000-4000-8000-000000000002', 'activa', 'salonregias', 'Salón Regias', 'DEMO_PHONE_ID', 'activo',
    unixepoch() * 1000);
 
 INSERT OR IGNORE INTO servicios (id, estilista_id, nombre, duracion_min, precio, activo) VALUES

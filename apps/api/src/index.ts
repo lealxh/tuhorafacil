@@ -1,9 +1,11 @@
 import { Hono } from 'hono';
 import { health } from './routes/health';
+import { webhook } from './routes/webhook';
 
 const app = new Hono<{ Bindings: Env }>();
 
 app.route('/health', health);
+app.route('/webhook', webhook);
 
 app.notFound((c) => c.json({ error: 'not_found' }, 404));
 

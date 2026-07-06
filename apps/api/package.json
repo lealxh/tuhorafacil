@@ -14,6 +14,9 @@
     "d1:seed:remote": "wrangler d1 execute tuhorafacil --remote --file ../../packages/db/seed.sql"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.110.0",
+    "@tuhorafacil/agenda": "workspace:*",
+    "@tuhorafacil/core": "workspace:*",
     "@tuhorafacil/db": "workspace:*",
     "hono": "^4.8.3"
   },

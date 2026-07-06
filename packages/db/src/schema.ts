@@ -148,6 +148,8 @@ export const conversaciones = sqliteTable(
       .notNull()
       .$defaultFn(() => new Date()),
     estado: text('estado', { enum: ['activa', 'escalada', 'cerrada'] }).notNull().default('activa'),
+    // Coexistence: si la estilista respondió desde su teléfono, el agente se pausa un rato
+    agentePausadoHasta: timestampMs('agente_pausado_hasta'),
   },
   (t) => [uniqueIndex('conversaciones_estilista_clienta_idx').on(t.estilistaId, t.clientaId)],
 );

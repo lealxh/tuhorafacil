@@ -9,6 +9,8 @@ App de agendamiento con agente IA en WhatsApp para estilistas independientes. Sp
 | `apps/web` | Dashboard + página pública — SvelteKit + Tailwind, deploy a Cloudflare Workers |
 | `apps/api` | API REST + webhook WhatsApp — Hono en Cloudflare Workers |
 | `packages/db` | Esquema Drizzle (Cloudflare D1 / SQLite), migraciones y seed |
+| `packages/agenda` | Lógica de dominio compartida: citas, bloqueos, slots, fechas |
+| `packages/core` | Motor de agendamiento puro (slots, validación) con tests |
 
 ## Requisitos
 

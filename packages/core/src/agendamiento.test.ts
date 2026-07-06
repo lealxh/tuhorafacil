@@ -6,6 +6,7 @@ import {
   finDeCita,
   seSolapan,
   slotsDisponibles,
+  sumarDias,
   validarCita,
 } from './agendamiento';
 
@@ -30,6 +31,12 @@ describe('helpers', () => {
   it('diaSemanaDe es estable sin importar la zona horaria del runtime', () => {
     expect(diaSemanaDe('2026-07-09')).toBe(4); // jueves
     expect(diaSemanaDe('2026-07-12')).toBe(0); // domingo
+  });
+
+  it('sumarDias cruza meses y años', () => {
+    expect(sumarDias('2026-07-31', 1)).toBe('2026-08-01');
+    expect(sumarDias('2026-12-31', 1)).toBe('2027-01-01');
+    expect(sumarDias('2026-07-01', -1)).toBe('2026-06-30');
   });
 
   it('diasEntre cuenta días de calendario', () => {

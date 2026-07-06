@@ -18,6 +18,7 @@
 	},
 	"dependencies": {
 		"@fontsource-variable/onest": "^5.2.5",
+		"@tuhorafacil/agenda": "workspace:*",
 		"@tuhorafacil/core": "workspace:*",
 		"@tuhorafacil/db": "workspace:*",
 		"better-auth": "^1.6.23"
