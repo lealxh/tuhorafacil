@@ -10,7 +10,10 @@ const DIAS_VISIBLES = 14;
 async function cargarEstilista(event: { params: { slug: string }; platform?: unknown }) {
 	const db = getDb(event as Parameters<typeof getDb>[0]);
 	const estilista = await db.query.estilistas.findFirst({
-		where: and(eq(estilistas.slugPublico, event.params.slug.slice(1)), eq(estilistas.estado, 'activa'))
+		where: and(
+			eq(estilistas.slugPublico, event.params.slug.slice(1)),
+			eq(estilistas.estado, 'activa')
+		)
 	});
 	if (!estilista) error(404, 'Página no encontrada');
 	return { db, estilista };
@@ -45,7 +48,11 @@ export const load: PageServerLoad = async (event) => {
 	}
 
 	const hoy = fechaLocalHoy();
-	const diasAbiertos = new Set((await db.query.horarios.findMany({ where: eq(horarios.estilistaId, estilista.id) })).map((h) => h.diaSemana));
+	const diasAbiertos = new Set(
+		(await db.query.horarios.findMany({ where: eq(horarios.estilistaId, estilista.id) })).map(
+			(h) => h.diaSemana
+		)
+	);
 	const dias = Array.from({ length: DIAS_VISIBLES }, (_, i) => {
 		const fecha = sumarDias(hoy, i);
 		return { fecha, abierto: diasAbiertos.has(diaSemanaDe(fecha)) };
@@ -62,7 +69,15 @@ export const load: PageServerLoad = async (event) => {
 		if (!('error' in r)) slots = r.slots;
 	}
 
-	return { negocio: estilista.nombreNegocio, servicios: serviciosActivos, servicio, exito: null, dias, fecha, slots };
+	return {
+		negocio: estilista.nombreNegocio,
+		servicios: serviciosActivos,
+		servicio,
+		exito: null,
+		dias,
+		fecha,
+		slots
+	};
 };
 
 export const actions: Actions = {
@@ -81,7 +96,9 @@ export const actions: Actions = {
 
 		const resultado = await crearCita(db, estilista.id, {
 			clientaNombre: nombre,
-			telefono: telefono.replace(/\s/g, '').startsWith('+') ? telefono.replace(/\s/g, '') : `+${telefono.replace(/\s/g, '')}`,
+			telefono: telefono.replace(/\s/g, '').startsWith('+')
+				? telefono.replace(/\s/g, '')
+				: `+${telefono.replace(/\s/g, '')}`,
 			servicioId,
 			fecha,
 			horaInicio: hora,

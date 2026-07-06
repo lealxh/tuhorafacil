@@ -35,6 +35,7 @@ export const estilistas = sqliteTable('estilistas', {
   rubro: text('rubro'),
   comuna: text('comuna'),
   bio: text('bio'),
+  fotoUrl: text('foto_url'),
   waPhoneNumberId: text('wa_phone_number_id'),
   waWabaId: text('wa_waba_id'),
   waAccessTokenEnc: text('wa_access_token_enc'),

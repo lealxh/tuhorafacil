@@ -15,6 +15,12 @@
 			"database_id": "b25d7de6-976d-446c-ab7d-564175494ae2"
 		}
 	],
+	"r2_buckets": [
+		{
+			"binding": "FOTOS",
+			"bucket_name": "tuhorafacil-fotos"
+		}
+	],
 	"vars": {
 		"BETTER_AUTH_URL": "https://tuhorafacil-web.tuhorafacil.workers.dev",
 		"API_BASE_URL": "https://tuhorafacil-api.tuhorafacil.workers.dev"

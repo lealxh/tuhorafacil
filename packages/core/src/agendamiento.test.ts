@@ -147,6 +147,19 @@ describe('validarCita', () => {
     expect(validarCita({ ...base, citas, horaInicio: '13:00' })).toBeNull();
   });
 
+  // editarCita excluye la propia cita de `citas` antes de validar; esto reproduce
+  // esa lógica: mover una cita dentro de su propio hueco solo es válido si se excluye.
+  it('editar: mover dentro del propio hueco solo pasa al excluir la cita', () => {
+    const propia = { horaInicio: '12:00', horaFin: '13:00' };
+    // Sin excluir la propia fila, mantener/nudge el mismo horario choca consigo misma
+    expect(validarCita({ ...base, citas: [propia], horaInicio: '12:30' })).toBe('solapa_cita');
+    // Excluida (como hace editarCita), el mismo cambio es válido
+    expect(validarCita({ ...base, citas: [], horaInicio: '12:30' })).toBeNull();
+    // Pero seguir chocando con OTRA cita sí se rechaza
+    const otra = { horaInicio: '14:00', horaFin: '15:00' };
+    expect(validarCita({ ...base, citas: [otra], horaInicio: '14:30' })).toBe('solapa_cita');
+  });
+
   it('rechaza pasado y anticipación insuficiente, incluso cruzando medianoche', () => {
     const ahora = { fecha: JUEVES, hora: '14:00' };
     expect(validarCita({ ...base, ahora, horaInicio: '13:00' })).toBe('en_el_pasado');

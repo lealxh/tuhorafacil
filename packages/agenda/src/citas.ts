@@ -57,11 +57,19 @@ export async function bloqueosDelDia(db: Db, estilistaId: string, fecha: string)
 	);
 }
 
-export async function citasDelDia(db: Db, estilistaId: string, fecha: string): Promise<RangoHorario[]> {
+export async function citasDelDia(
+	db: Db,
+	estilistaId: string,
+	fecha: string,
+	excluirCitaId?: string
+): Promise<RangoHorario[]> {
+	const condiciones = [eq(citas.estilistaId, estilistaId), eq(citas.fecha, fecha), ne(citas.estado, 'cancelada')];
+	// Al editar una cita, se excluye su propia fila para poder mantener el mismo horario
+	if (excluirCitaId) condiciones.push(ne(citas.id, excluirCitaId));
 	return db
 		.select({ horaInicio: citas.horaInicio, horaFin: citas.horaFin })
 		.from(citas)
-		.where(and(eq(citas.estilistaId, estilistaId), eq(citas.fecha, fecha), ne(citas.estado, 'cancelada')));
+		.where(and(...condiciones));
 }
 
 export interface NuevaCita {
@@ -117,6 +125,62 @@ export async function crearCita(db: Db, estilistaId: string, cita: NuevaCita): P
 		)`);
 	if (resultado.meta.changes === 0) return { error: MENSAJE_RECHAZO.solapa_cita };
 	return { id };
+}
+
+export interface CambiosCita {
+	servicioId?: string;
+	fecha?: string;
+	horaInicio?: string;
+}
+
+/**
+ * Edita una cita confirmada in situ (misma fila, preserva origen). Recalcula
+ * horaFin según la duración del servicio y valida excluyendo la propia cita.
+ */
+export async function editarCita(
+	db: Db,
+	estilistaId: string,
+	citaId: string,
+	cambios: CambiosCita
+): Promise<{ error: string } | { ok: true }> {
+	const cita = await db.query.citas.findFirst({
+		where: and(eq(citas.id, citaId), eq(citas.estilistaId, estilistaId), eq(citas.estado, 'confirmada'))
+	});
+	if (!cita) return { error: 'No se encontró la cita.' };
+
+	const servicioId = cambios.servicioId ?? cita.servicioId;
+	const fecha = cambios.fecha ?? cita.fecha;
+	const horaInicio = cambios.horaInicio ?? cita.horaInicio;
+	if (!RE_FECHA.test(fecha) || !RE_HORA.test(horaInicio)) return { error: 'Revisa la fecha y la hora.' };
+
+	const servicio = await db.query.servicios.findFirst({
+		where: and(eq(servicios.id, servicioId), eq(servicios.estilistaId, estilistaId), eq(servicios.activo, true))
+	});
+	if (!servicio) return { error: 'Elige un servicio.' };
+
+	const motivo = validarCita({
+		fecha,
+		horaInicio,
+		duracionMin: servicio.duracionMin,
+		horarios: await db.query.horarios.findMany({ where: eq(horarios.estilistaId, estilistaId) }),
+		citas: await citasDelDia(db, estilistaId, fecha, citaId),
+		bloqueos: await bloqueosDelDia(db, estilistaId, fecha),
+		ahora: { fecha: fechaLocalHoy(), hora: horaLocalAhora() }
+	});
+	if (motivo) return { error: MENSAJE_RECHAZO[motivo] };
+
+	// Update atómico con el mismo guard anti-solapamiento que crearCita, excluyendo la propia fila.
+	const horaFin = finDeCita(horaInicio, servicio.duracionMin);
+	const resultado = await db.run(sql`
+		UPDATE citas SET servicio_id = ${servicioId}, fecha = ${fecha}, hora_inicio = ${horaInicio}, hora_fin = ${horaFin}
+		WHERE id = ${citaId} AND estilista_id = ${estilistaId} AND estado = 'confirmada'
+			AND NOT EXISTS (
+				SELECT 1 FROM citas
+				WHERE estilista_id = ${estilistaId} AND fecha = ${fecha} AND estado != 'cancelada' AND id != ${citaId}
+					AND hora_inicio < ${horaFin} AND ${horaInicio} < hora_fin
+			)`);
+	if (resultado.meta.changes === 0) return { error: MENSAJE_RECHAZO.solapa_cita };
+	return { ok: true };
 }
 
 export async function cancelarCita(db: Db, estilistaId: string, citaId: string) {

@@ -27,6 +27,9 @@
 | **Metering (F9)** | Tokens+mensajes+citas por mes, límite pausa al agente con mensaje amable, barra de uso con aviso al 80% | orquestador + `/app/plan` |
 | **Probar agente en navegador** (herramienta de test, no demo) | Canal de prueba sin WhatsApp: `POST /mock/chat` reusa el core `correrAgente` con una clienta sintética `WEB_DEMO`, mismos gates salvo `waEstado`. UI de chat en `/app/probar-agente` (entrada desde «Mi agente»). Verificado en vivo: responde con servicios reales, agenda cita real, respeta el gate por tier | `apps/api/src/agente/simular.ts` + `routes/mock.ts`; `apps/web/.../probar-agente` |
 | **Cambio de plan + pago mockeado** | `/app/plan` con tarjetas clicables → `/app/plan/checkout` (pantalla estilo Webpay que siempre aprueba) → registra `suscripciones` y cambia `estilistas.tier_id` (desbloquea el agente al instante). La pasarela real (Webpay/Flow/Mercado Pago) se enchufa en la acción `pagar` | tabla `suscripciones` (migración 0004); `apps/web/.../plan` + `plan/checkout` |
+| **Panel admin (F8)** | Route group `/admin` con guard por `user.role='admin'` (columna nueva; se re-consulta en `esAdmin`). Tabla de cuentas (tier, estado, waEstado, mensajes y **costo USD** del mes), cambiar tier, pausar/reactivar. Costo: `registrarConsumo` ahora calcula `costo_estimado_usd` con precios Haiku 4.5. **Sin** tope duro con bloqueo (queda en hardening). Verificado en vivo: pausar → el agente se frena en el chat de prueba | migración 0005 (`user.role`); `apps/web/src/routes/admin/*`; `orquestador.ts` |
+| **Editar cita (F4)** | Primitivo de dominio `editarCita` en `packages/agenda` (reusa `validarCita`/`finDeCita` + guard atómico anti-solapamiento, con `excluirCitaId` para no chocar consigo misma). Edita servicio/fecha/hora **in situ** (misma fila, preserva `origen`). Hoja de edición en el calendario. 21 tests en verde (nuevo test de auto-solapamiento). Verificado en vivo | `packages/agenda/src/citas.ts`; `apps/web/.../calendario` |
+| **Foto de perfil (F5)** | Bucket R2 privado `tuhorafacil-fotos` (binding `FOTOS`) + ruta `GET /fotos/[...key]` que la sirve. Acción `foto` en «Mi página» (multipart, valida tipo/≤3MB, borra la anterior, `put` con ArrayBuffer). Aparece en el mantenedor y en `/@slug`. Verificado en vivo. Prod: crear el bucket con `wrangler r2 bucket create tuhorafacil-fotos` | migración 0005 (`estilistas.foto_url`); `apps/web/.../pagina`, `routes/fotos/[...key]` |
 
 ### ⚠️ Detalles operativos que el próximo modelo debe saber
 
@@ -41,13 +44,10 @@
 | # | Qué | Notas |
 |---|---|---|
 | 1 | **Recordatorios (F7, Cron Triggers)** | Infraestructura construible ya (cron + query de citas próximas + registro en `conversaciones_meta`); el envío real necesita plantillas aprobadas por Meta. Dejar el envío tras el mismo patrón degradante de `enviarTexto` |
-| 2 | **Panel admin (F8)** | Requiere decidir rol admin (better-auth admin plugin o flag en tabla). Tabla de cuentas, cambiar tier, pausar, tope duro de gasto (riesgo #6, aún sin implementar) |
-| 3 | **Embedded Signup (F10)** | **BLOQUEADO por trámite Meta** (Tech Provider — responsabilidad de José, iniciado ~jul 2026). Al desbloquear: popup JS SDK en onboarding paso 4 + callback que canjea código OAuth → guardar `wa_waba_id`, `wa_phone_number_id`, token **cifrado** (`wa_access_token_enc`, definir cifrado con `WA_APP_SECRET`), suscribir webhook, `wa_estado='activo'`. Validar firma `X-Hub-Signature-256` en el webhook (TODO marcado en `routes/webhook.ts`) |
-| 4 | **Editar cita** | Hoy es cancelar + crear. Sheet de edición pendiente |
-| 5 | **Foto de perfil** (Mi página) | Necesita bucket R2 + upload; placeholder "muy pronto" ya visible |
-| 6 | **Recuperación de contraseña** | better-auth lo trae, pero requiere servicio de email (ej. Cloudflare Email o Resend) |
-| 7 | **Hardening pre-demo** | Rate limiting del webhook, tope duro de gasto, política de retención de conversaciones (requisito legal), revisar índices D1 |
-| 8 | **Pruebas del dueño** | José está probando la app y traerá lista de mejoras UX |
+| 2 | **Embedded Signup (F10)** | **BLOQUEADO por trámite Meta** (Tech Provider — responsabilidad de José, iniciado ~jul 2026). Al desbloquear: popup JS SDK en onboarding paso 4 + callback que canjea código OAuth → guardar `wa_waba_id`, `wa_phone_number_id`, token **cifrado** (`wa_access_token_enc`, definir cifrado con `WA_APP_SECRET`), suscribir webhook, `wa_estado='activo'`. Validar firma `X-Hub-Signature-256` en el webhook (TODO marcado en `routes/webhook.ts`) |
+| 3 | **Recuperación de contraseña** | better-auth lo trae, pero requiere servicio de email (ej. Cloudflare Email o Resend) |
+| 4 | **Hardening pre-demo** | Rate limiting del webhook, **tope duro de gasto con bloqueo** (hoy el costo se calcula y muestra en el panel, pero sin gate que pause; falta el bloqueo), política de retención de conversaciones (requisito legal), revisar índices D1 |
+| 5 | **Pruebas del dueño** | José está probando la app y traerá lista de mejoras UX |
 
 ### Riesgos vigentes
 

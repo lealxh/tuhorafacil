@@ -4,11 +4,23 @@ import {
 	cancelarCita,
 	crearBloqueo,
 	crearCita,
+	editarCita,
 	eliminarBloqueo
 } from '@tuhorafacil/agenda';
 import { fechaLocalHoy } from '@tuhorafacil/agenda';
 import { diaSemanaDe, sumarDias } from '@tuhorafacil/core';
-import { and, asc, citas, clientasFinales, eq, gte, horarios, lte, ne, servicios } from '@tuhorafacil/db';
+import {
+	and,
+	asc,
+	citas,
+	clientasFinales,
+	eq,
+	gte,
+	horarios,
+	lte,
+	ne,
+	servicios
+} from '@tuhorafacil/db';
 import { error, fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad, RequestEvent } from './$types';
 
@@ -50,13 +62,21 @@ export const load: PageServerLoad = async (event) => {
 				horaInicio: citas.horaInicio,
 				horaFin: citas.horaFin,
 				origen: citas.origen,
+				servicioId: citas.servicioId,
 				clienta: clientasFinales.nombre,
 				servicio: servicios.nombre
 			})
 			.from(citas)
 			.innerJoin(clientasFinales, eq(citas.clientaId, clientasFinales.id))
 			.innerJoin(servicios, eq(citas.servicioId, servicios.id))
-			.where(and(eq(citas.estilistaId, estilista.id), gte(citas.fecha, desde), lte(citas.fecha, hasta), ne(citas.estado, 'cancelada')))
+			.where(
+				and(
+					eq(citas.estilistaId, estilista.id),
+					gte(citas.fecha, desde),
+					lte(citas.fecha, hasta),
+					ne(citas.estado, 'cancelada')
+				)
+			)
 			.orderBy(asc(citas.fecha), asc(citas.horaInicio)),
 		bloqueos: vista === 'dia' ? await bloqueosDelDia(db, estilista.id, fecha) : [],
 		horarios: await db.query.horarios.findMany({ where: eq(horarios.estilistaId, estilista.id) }),
@@ -90,6 +110,18 @@ export const actions: Actions = {
 		return { creada: true };
 	},
 
+	editar: async (event) => {
+		const { db, estilista } = await contexto(event);
+		const datos = await event.request.formData();
+		const resultado = await editarCita(db, estilista.id, String(datos.get('id') ?? ''), {
+			servicioId: String(datos.get('servicioId') ?? ''),
+			fecha: String(datos.get('fecha') ?? ''),
+			horaInicio: String(datos.get('horaInicio') ?? '')
+		});
+		if ('error' in resultado) return fail(400, { sheet: 'editar', error: resultado.error });
+		return { editada: true };
+	},
+
 	cancelar: async (event) => {
 		const { db, estilista } = await contexto(event);
 		await cancelarCita(db, estilista.id, String((await event.request.formData()).get('id') ?? ''));
@@ -110,6 +142,10 @@ export const actions: Actions = {
 
 	desbloquear: async (event) => {
 		const { db, estilista } = await contexto(event);
-		await eliminarBloqueo(db, estilista.id, String((await event.request.formData()).get('id') ?? ''));
+		await eliminarBloqueo(
+			db,
+			estilista.id,
+			String((await event.request.formData()).get('id') ?? '')
+		);
 	}
 };

@@ -21,11 +21,19 @@
 	<div class="from-[#E7C9BC] to-[#DDB0A0] h-28 bg-gradient-to-br"></div>
 
 	<div class="-mt-9 flex flex-col px-6">
-		<div
-			class="bg-blush flex h-[72px] w-[72px] items-center justify-center rounded-[20px] border-[3px] border-white text-3xl shadow-[0_6px_16px_rgba(160,90,70,.2)]"
-		>
-			💇🏻‍♀️
-		</div>
+		{#if data.negocio.fotoUrl}
+			<img
+				src={data.negocio.fotoUrl}
+				alt={data.negocio.nombre}
+				class="h-[72px] w-[72px] rounded-[20px] border-[3px] border-white object-cover shadow-[0_6px_16px_rgba(160,90,70,.2)]"
+			/>
+		{:else}
+			<div
+				class="bg-blush flex h-[72px] w-[72px] items-center justify-center rounded-[20px] border-[3px] border-white text-3xl shadow-[0_6px_16px_rgba(160,90,70,.2)]"
+			>
+				💇🏻‍♀️
+			</div>
+		{/if}
 		<h1 class="mt-3 text-2xl font-extrabold tracking-tight">{data.negocio.nombre}</h1>
 		{#if data.negocio.rubro || data.negocio.comuna}
 			<p class="text-ink-soft mt-0.5 text-sm">
@@ -59,7 +67,9 @@
 					</a>
 				</div>
 			{:else}
-				<p class="text-ink-soft rounded-card bg-white px-4 py-4 text-center text-sm">Aún no hay servicios publicados.</p>
+				<p class="text-ink-soft rounded-card bg-white px-4 py-4 text-center text-sm">
+					Aún no hay servicios publicados.
+				</p>
 			{/each}
 		</div>
 

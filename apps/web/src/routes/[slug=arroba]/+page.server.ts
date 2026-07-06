@@ -17,7 +17,8 @@ export const load: PageServerLoad = async (event) => {
 			nombre: estilista.nombreNegocio,
 			rubro: estilista.rubro,
 			comuna: estilista.comuna,
-			bio: estilista.bio
+			bio: estilista.bio,
+			fotoUrl: estilista.fotoUrl
 		},
 		servicios: await db.query.servicios.findMany({
 			where: and(eq(servicios.estilistaId, estilista.id), eq(servicios.activo, true)),

@@ -33,7 +33,10 @@ export async function simularMensaje(env: Env, estilistaId: string, texto: strin
   const { clienta, conversacionId } = await asegurarConversacion(db, estilista.id);
   await db.insert(mensajes).values({ conversacionId, rol: 'clienta', contenido: texto });
 
-  // Gates (sin waEstado): tier, agente activo y límite mensual
+  // Gates (sin waEstado, que depende de WhatsApp): estado de la cuenta, tier, agente activo y límite mensual
+  if (estilista.estado !== 'activa') {
+    return gate(db, conversacionId, 'La cuenta está pausada. Reactívala para usar el agente.');
+  }
   const tier = await db.query.tiers.findFirst({ where: eq(tiers.id, estilista.tierId) });
   if (!tier?.tieneAgente) {
     return gate(db, conversacionId, 'Tu plan no incluye el agente. Cámbiate a Recepcionista o Pro para probarlo.');

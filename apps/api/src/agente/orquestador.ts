@@ -25,6 +25,9 @@ import { construirSystemPrompt } from './prompt';
 import { ejecutarTool, TOOLS, type ContextoTools } from './tools';
 
 const MODELO = 'claude-haiku-4-5';
+// Precios Claude Haiku 4.5 en USD por token (tarifas por millón: $1 entrada, $5 salida)
+const USD_POR_TOKEN_ENTRADA = 1 / 1_000_000;
+const USD_POR_TOKEN_SALIDA = 5 / 1_000_000;
 const MAX_ITERACIONES = 6;
 const HISTORIAL_MAX = 30;
 const COOLDOWN_COEXISTENCE_MS = 10 * 60 * 1000;
@@ -259,6 +262,7 @@ export async function registrarConsumo(
   tokens: { entrada: number; salida: number },
   citasCreadas: number
 ): Promise<void> {
+  const costoUsd = tokens.entrada * USD_POR_TOKEN_ENTRADA + tokens.salida * USD_POR_TOKEN_SALIDA;
   await db
     .insert(consumoMensual)
     .values({
@@ -267,7 +271,8 @@ export async function registrarConsumo(
       mensajesAgente: 1,
       tokensEntrada: tokens.entrada,
       tokensSalida: tokens.salida,
-      citasCreadas
+      citasCreadas,
+      costoEstimadoUsd: costoUsd
     })
     .onConflictDoUpdate({
       target: [consumoMensual.estilistaId, consumoMensual.mes],
@@ -275,7 +280,8 @@ export async function registrarConsumo(
         mensajesAgente: sql`${consumoMensual.mensajesAgente} + 1`,
         tokensEntrada: sql`${consumoMensual.tokensEntrada} + ${tokens.entrada}`,
         tokensSalida: sql`${consumoMensual.tokensSalida} + ${tokens.salida}`,
-        citasCreadas: sql`${consumoMensual.citasCreadas} + ${citasCreadas}`
+        citasCreadas: sql`${consumoMensual.citasCreadas} + ${citasCreadas}`,
+        costoEstimadoUsd: sql`${consumoMensual.costoEstimadoUsd} + ${costoUsd}`
       }
     });
 }
