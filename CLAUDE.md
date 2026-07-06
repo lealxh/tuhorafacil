@@ -68,7 +68,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 ## Project state
 
-pnpm monorepo targeting a live demo in October 2026. Fase 0 (foundations) is done; Fase 1 (auth, CRUD, scheduling engine, calendar UI) is next. Source-of-truth docs (in Spanish):
+pnpm monorepo targeting a live demo in October 2026. Fases 0–1 complete; Fase 2 complete except Embedded Signup (blocked on Meta Tech Provider approval); Fase 3 partially done (public booking page ✅, reminders/admin/hardening pending). **Read `03-plan-de-trabajo.md` § 0 "ESTADO DE AVANCE" first** — it has the full done/pending breakdown, operational details (accounts, secrets, test credentials), and known pitfalls. Source-of-truth docs (in Spanish):
 
 - `01-requerimientos-funcionales.md` — functional requirements, tiers, MVP scope
 - `02-especificaciones-tecnicas2.md` — architecture, data model, build order
