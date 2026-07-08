@@ -227,6 +227,12 @@ export const suscripciones = sqliteTable(
   (t) => [index('suscripciones_estilista_idx').on(t.estilistaId)],
 );
 
+// Configuración global de la plataforma (clave→valor). Ej: 'system_prompt' editable por admin.
+export const configuracion = sqliteTable('configuracion', {
+  clave: text('clave').primaryKey(),
+  valor: text('valor').notNull(),
+});
+
 export const plantillasWa = sqliteTable('plantillas_wa', {
   id: uuid(),
   // Pre-aprobadas a nivel de plataforma (Tech Provider); sirven para todas las estilistas

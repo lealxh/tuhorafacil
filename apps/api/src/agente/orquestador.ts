@@ -6,6 +6,7 @@ import {
   citas,
   clientasFinales,
   configAgente,
+  configuracion,
   consumoMensual,
   conversaciones,
   createDb,
@@ -19,9 +20,9 @@ import {
   tiers,
   type Db
 } from '@tuhorafacil/db';
+import { construirSystemPrompt } from '@tuhorafacil/agenda';
 import { enviarTexto } from '../whatsapp/enviar';
 import type { CambioValor, MensajeEntrante, WebhookPayload } from '../whatsapp/tipos';
-import { construirSystemPrompt } from './prompt';
 import { ejecutarTool, TOOLS, type ContextoTools } from './tools';
 
 const MODELO = 'claude-haiku-4-5';
@@ -171,7 +172,10 @@ export async function correrAgente(
   if (!env.ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY no configurada');
 
   const config = await db.query.configAgente.findFirst({ where: eq(configAgente.estilistaId, estilista.id) });
-  const system = construirSystemPrompt({
+  // Plantilla del system prompt editable por admin (fallback: la por defecto)
+  const plantilla = (await db.query.configuracion.findFirst({ where: eq(configuracion.clave, 'system_prompt') }))?.valor;
+  const system = construirSystemPrompt(
+    {
     nombreNegocio: estilista.nombreNegocio,
     nombreEstilista: estilista.nombre,
     rubro: estilista.rubro,
@@ -195,7 +199,9 @@ export async function correrAgente(
         )
       ),
     nombreClienta: clienta.nombre
-  });
+    },
+    plantilla
+  );
 
   const historial = await db.query.mensajes.findMany({
     where: eq(mensajes.conversacionId, conversacionId),

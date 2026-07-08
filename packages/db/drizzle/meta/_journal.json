@@ -43,6 +43,13 @@
       "when": 1783333431134,
       "tag": "0005_mushy_red_ghost",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1783361268495,
+      "tag": "0006_free_warbird",
+      "breakpoints": true
     }
   ]
 }
