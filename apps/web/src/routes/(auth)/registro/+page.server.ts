@@ -31,12 +31,21 @@ export const actions: Actions = {
 			if (e instanceof APIError) {
 				const yaExiste = e.status === 'UNPROCESSABLE_ENTITY';
 				return fail(400, {
-					error: yaExiste ? 'Ya existe una cuenta con ese email.' : 'No pudimos crear tu cuenta. Revisa los datos.',
+					error: yaExiste
+						? 'Ya existe una cuenta con ese email.'
+						: 'No pudimos crear tu cuenta. Revisa los datos.',
 					nombre,
 					email
 				});
 			}
 			throw e;
+		}
+
+		// Si venía de un plan pagado en la landing, lo lleva por el onboarding y
+		// termina en el checkout mockeado de ese plan (Agenda es gratis: sin esto, va a /app).
+		const plan = event.url.searchParams.get('plan');
+		if (plan === 'recepcionista' || plan === 'pro') {
+			redirect(303, `/app/onboarding?plan=${plan}`);
 		}
 		redirect(303, '/app');
 	}

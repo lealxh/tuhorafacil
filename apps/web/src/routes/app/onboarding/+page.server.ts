@@ -14,16 +14,25 @@ function generarSlugBase(nombre: string): string {
 		.slice(0, 30);
 }
 
+// Plan pagado elegido en la landing antes de crear la cuenta; se hila por el wizard
+// vía query param y, al terminar, lleva al checkout mockeado de ese plan.
+function planPedido(url: URL): 'recepcionista' | 'pro' | null {
+	const valor = url.searchParams.get('plan');
+	return valor === 'recepcionista' || valor === 'pro' ? valor : null;
+}
+
 export const load: PageServerLoad = async (event) => {
 	const { estilista } = await event.parent();
 	const pasoPedido = Number(event.url.searchParams.get('paso') ?? '1');
 	const paso = estilista ? Math.min(Math.max(pasoPedido, 1), 4) : 1;
+	const plan = planPedido(event.url);
 
-	if (!estilista) return { paso: 1, servicios: [], horarios: [] };
+	if (!estilista) return { paso: 1, plan, servicios: [], horarios: [] };
 
 	const db = getDb(event);
 	return {
 		paso,
+		plan,
 		servicios: await db.query.servicios.findMany({
 			where: eq(servicios.estilistaId, estilista.id),
 			orderBy: asc(servicios.nombre)
@@ -47,19 +56,25 @@ export const actions: Actions = {
 		const nombreNegocio = String(datos.get('nombreNegocio') ?? '').trim();
 		const rubro = String(datos.get('rubro') ?? '').trim();
 		const comuna = String(datos.get('comuna') ?? '').trim();
+		const plan = String(datos.get('plan') ?? '');
+		const sufijoPlan = plan === 'recepcionista' || plan === 'pro' ? `&plan=${plan}` : '';
 		if (!nombreNegocio) return fail(400, { error: 'Ponle nombre a tu negocio.' });
 
 		const db = getDb(event);
-		if (await getEstilista(db, event.locals.user!.id)) redirect(303, '/app/onboarding?paso=2');
+		if (await getEstilista(db, event.locals.user!.id))
+			redirect(303, `/app/onboarding?paso=2${sufijoPlan}`);
 
 		const tierAgenda = await db.query.tiers.findFirst({ where: eq(tiers.nombre, 'agenda') });
 		if (!tierAgenda) error(500, 'Tiers no inicializados');
 
 		const base = generarSlugBase(nombreNegocio) || 'minegocio';
 		const existentes = new Set(
-			(await db.select({ slug: estilistas.slugPublico }).from(estilistas).where(like(estilistas.slugPublico, `${base}%`))).map(
-				(r) => r.slug
-			)
+			(
+				await db
+					.select({ slug: estilistas.slugPublico })
+					.from(estilistas)
+					.where(like(estilistas.slugPublico, `${base}%`))
+			).map((r) => r.slug)
 		);
 		let slug = base;
 		for (let n = 2; existentes.has(slug); n++) slug = `${base}${n}`;
@@ -73,7 +88,7 @@ export const actions: Actions = {
 			rubro: rubro || null,
 			comuna: comuna || null
 		});
-		redirect(303, '/app/onboarding?paso=2');
+		redirect(303, `/app/onboarding?paso=2${sufijoPlan}`);
 	},
 
 	agregarServicio: async (event) => {
@@ -90,8 +105,11 @@ export const actions: Actions = {
 
 	guardarHorarios: async (event) => {
 		const est = await estilistaRequerida(event);
-		const resultado = await guardarHorariosDesdeForm(getDb(event), est.id, await event.request.formData());
+		const datos = await event.request.formData();
+		const resultado = await guardarHorariosDesdeForm(getDb(event), est.id, datos);
 		if (resultado) return fail(400, resultado);
-		redirect(303, '/app/onboarding?paso=4');
+		const plan = String(datos.get('plan') ?? '');
+		const sufijoPlan = plan === 'recepcionista' || plan === 'pro' ? `&plan=${plan}` : '';
+		redirect(303, `/app/onboarding?paso=4${sufijoPlan}`);
 	}
 };
