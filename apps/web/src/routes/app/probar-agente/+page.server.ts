@@ -46,28 +46,33 @@ async function contexto(event: RequestEvent) {
 	return { estilista, env };
 }
 
+/**
+ * Llama a la api por service binding (en producción Cloudflare bloquea el fetch
+ * a workers.dev de la propia cuenta); en dev local cae al fetch normal.
+ */
+function llamarApi(env: App.Platform['env'], ruta: string, body: unknown): Promise<Response> {
+	const req = new Request(`${env.API_BASE_URL}${ruta}`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json', 'X-Mock-Secret': env.MOCK_CHAT_SECRET },
+		body: JSON.stringify(body)
+	});
+	return env.API ? env.API.fetch(req) : fetch(req);
+}
+
 export const actions: Actions = {
 	enviar: async (event) => {
 		const { estilista, env } = await contexto(event);
 		const texto = String((await event.request.formData()).get('texto') ?? '').trim();
 		if (!texto) return fail(400, { error: 'Escribe un mensaje' });
 
-		const res = await fetch(`${env.API_BASE_URL}/mock/chat`, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json', 'X-Mock-Secret': env.MOCK_CHAT_SECRET },
-			body: JSON.stringify({ estilistaId: estilista.id, texto })
-		});
+		const res = await llamarApi(env, '/mock/chat', { estilistaId: estilista.id, texto });
 		if (!res.ok) return fail(502, { error: 'No se pudo contactar al agente' });
 		return { enviado: true };
 	},
 
 	reset: async (event) => {
 		const { estilista, env } = await contexto(event);
-		await fetch(`${env.API_BASE_URL}/mock/chat/reset`, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json', 'X-Mock-Secret': env.MOCK_CHAT_SECRET },
-			body: JSON.stringify({ estilistaId: estilista.id })
-		});
+		await llamarApi(env, '/mock/chat/reset', { estilistaId: estilista.id });
 		return { reiniciado: true };
 	}
 };

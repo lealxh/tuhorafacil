@@ -25,6 +25,9 @@
 		"BETTER_AUTH_URL": "https://tuhorafacil-web.tuhorafacil.workers.dev",
 		"API_BASE_URL": "https://tuhorafacil-api.tuhorafacil.workers.dev"
 	},
+	// Worker-to-worker: en producción el fetch a la URL pública workers.dev de la
+	// propia cuenta está bloqueado, así que la api se llama por service binding
+	"services": [{ "binding": "API", "service": "tuhorafacil-api" }],
 	"observability": {
 		"enabled": true,
 		"head_sampling_rate": 1
