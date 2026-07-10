@@ -16,6 +16,12 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # wrangler types infiere los tipos de los secrets desde .dev.vars (gitignorado):
+      # sin esto, Env sale sin ANTHROPIC_API_KEY etc. y el typecheck falla en CI
+      - name: Crear .dev.vars desde los ejemplos
+        run: |
+          cp apps/api/.dev.vars.example apps/api/.dev.vars
+          cp apps/web/.dev.vars.example apps/web/.dev.vars
       - run: pnpm -r check
       - run: pnpm -r test
       - run: pnpm -r build
