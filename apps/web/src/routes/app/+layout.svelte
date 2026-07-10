@@ -44,6 +44,7 @@
 		'/app': ['Citas de hoy', 'La pantalla que más vas a mirar'],
 		'/app/calendario': ['Calendario', 'Tus citas de un vistazo'],
 		'/app/agente': ['Mi agente', 'Responde tus WhatsApp y agenda por ti'],
+		'/app/probar-agente': ['Probar agente', 'Conversa con tu agente como si fueras una clienta'],
 		'/app/pagina': ['Mi página', 'Tu link para la bio de Instagram'],
 		'/app/plan': ['Consumo', 'Tu plan y el uso del mes'],
 		'/app/servicios': ['Servicios', 'Lo que tu agente puede agendar'],
