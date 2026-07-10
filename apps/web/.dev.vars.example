@@ -1,0 +1,7 @@
+# Copiar a .dev.vars (gitignored) para desarrollo local
+BETTER_AUTH_SECRET=generar-con-openssl-rand-base64-32
+BETTER_AUTH_URL=http://localhost:5173
+# Canal de prueba del agente: la web llama a la API (apps/api) server-to-server
+API_BASE_URL=http://localhost:8787
+# Debe coincidir con el MOCK_CHAT_SECRET de apps/api
+MOCK_CHAT_SECRET=dev-mock-secret

@@ -1,0 +1,8 @@
+# Copiar a .dev.vars (gitignored) para desarrollo local
+WA_VERIFY_TOKEN=demo-verify-token
+# Sin ANTHROPIC_API_KEY el agente degrada con gracia (responde "te respondo en un momento")
+ANTHROPIC_API_KEY=
+# Sin WA_ACCESS_TOKEN los envíos a WhatsApp se loguean en vez de enviarse (modo dev)
+WA_ACCESS_TOKEN=
+# Secreto compartido con la web para el canal de prueba del agente (/mock/chat)
+MOCK_CHAT_SECRET=dev-mock-secret
