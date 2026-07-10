@@ -1,4 +1,4 @@
-import { getDb, getEstilista } from '$lib/server/db';
+import { contextoEstilista as contexto, getDb } from '$lib/server/db';
 import { fechaLocalHoy } from '@tuhorafacil/agenda';
 import {
 	and,
@@ -12,8 +12,8 @@ import {
 	tiers,
 	type Db
 } from '@tuhorafacil/db';
-import { error, fail, redirect } from '@sveltejs/kit';
-import type { Actions, PageServerLoad, RequestEvent } from './$types';
+import { fail, redirect } from '@sveltejs/kit';
+import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
 	const { estilista } = await event.parent();
@@ -55,13 +55,6 @@ export const load: PageServerLoad = async (event) => {
 		escaladas: conMensajes
 	};
 };
-
-async function contexto(event: RequestEvent) {
-	const db = getDb(event);
-	const estilista = await getEstilista(db, event.locals.user!.id);
-	if (!estilista) error(400, 'Sin negocio configurado');
-	return { db, estilista };
-}
 
 async function upsertConfig(db: Db, estilistaId: string, valores: Partial<typeof configAgente.$inferInsert>) {
 	await db

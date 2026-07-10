@@ -59,7 +59,7 @@
 						</p>
 					</div>
 					{#if limite}
-						<div class="bg-[#F3E4DE] mt-3 h-2.5 overflow-hidden rounded-md">
+						<div class="bg-track mt-3 h-2.5 overflow-hidden rounded-md">
 							<div
 								class="h-full rounded-md {cercaDelLimite
 									? 'bg-blush-deep'

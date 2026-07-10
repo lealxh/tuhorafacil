@@ -4,8 +4,7 @@
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
-	const inputCls =
-		'rounded-field border-line focus:border-primary bg-surface border px-4 py-2.5 text-sm';
+	const inputCls = 'input-base bg-surface';
 	const waConectado = $derived(data.estilista?.waEstado === 'activo');
 </script>
 
@@ -26,7 +25,7 @@
 			<input name="nombre" required value={data.user.name} class={inputCls} />
 		</label>
 		{#if form?.seccion === 'perfil'}
-			{#if 'error' in form && form.error}<p class="text-blush-deep bg-blush rounded-field px-4 py-2.5 text-sm">{form.error}</p>
+			{#if 'error' in form && form.error}<p class="form-error">{form.error}</p>
 			{:else}<p class="text-success text-xs font-semibold">Guardado ✓</p>{/if}
 		{/if}
 		<button type="submit" class="rounded-field bg-blush text-blush-deep px-4 py-2.5 text-sm font-bold">Guardar</button>
@@ -45,7 +44,7 @@
 			<span class="text-ink-faint text-xs">Mínimo 8 caracteres. Cierra tus otras sesiones.</span>
 		</label>
 		{#if form?.seccion === 'password'}
-			{#if 'error' in form && form.error}<p class="text-blush-deep bg-blush rounded-field px-4 py-2.5 text-sm">{form.error}</p>
+			{#if 'error' in form && form.error}<p class="form-error">{form.error}</p>
 			{:else}<p class="text-success text-xs font-semibold">Contraseña actualizada ✓</p>{/if}
 		{/if}
 		<button type="submit" class="rounded-field bg-blush text-blush-deep px-4 py-2.5 text-sm font-bold">Cambiar</button>

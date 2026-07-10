@@ -17,9 +17,28 @@
 	--color-blush-deep: #c56a52;
 	--color-line: #f1e2dc;
 	--color-success: #5fbe8e;
+	--color-track: #f3e4de; /* fondo de tracks: tabs píldora, barras de progreso */
 
 	--radius-field: 0.875rem; /* inputs y botones: 14px */
 	--radius-card: 1.25rem; /* cards y sheets: 20px */
+}
+
+/* Botón CTA primario: gradiente + sombra del mock. Radio, padding y tamaño de texto van por uso. */
+@utility btn-primary {
+	@apply from-primary to-primary-light bg-gradient-to-br font-bold text-white transition;
+	box-shadow: 0 8px 18px -8px rgb(217 127 106 / 0.6);
+	&:active {
+		transform: scale(0.98);
+	}
+}
+
+/* Input de formulario estándar. El fondo va por uso (bg-white en sheets, bg-surface en cards). */
+@utility input-base {
+	@apply rounded-field border-line focus:border-primary border px-4 py-3 text-sm;
+}
+
+@utility form-error {
+	@apply text-blush-deep bg-blush rounded-field px-4 py-2.5 text-sm;
 }
 
 body {

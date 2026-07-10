@@ -46,7 +46,7 @@
 
 		<a
 			href={linkReserva()}
-			class="rounded-field from-primary to-primary-light mt-5 block bg-gradient-to-br px-4 py-3.5 text-center text-[15px] font-bold text-white shadow-[0_8px_18px_-8px_rgba(217,127,106,.6)] transition active:scale-[.98]"
+			class="btn-primary rounded-field mt-5 block px-4 py-3.5 text-center text-[15px]"
 		>
 			Reservar una hora
 		</a>

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { NOMBRES } from '$lib/plan';
 	import type { LayoutData } from './$types';
 
 	let { data, children }: { data: LayoutData; children: import('svelte').Snippet } = $props();
@@ -37,8 +38,6 @@
 			icono: '<path d="M4 20h16"/><rect x="5.5" y="12" width="3.2" height="6" rx="1.4"/><rect x="10.5" y="8" width="3.2" height="10" rx="1.4"/><rect x="15.5" y="5" width="3.2" height="13" rx="1.4"/>'
 		}
 	];
-
-	const TIERS: Record<string, string> = { agenda: 'Agenda', recepcionista: 'Recepcionista', pro: 'Pro' };
 
 	// Header desktop del mock: título + subtítulo por sección
 	const CABECERAS: Record<string, [string, string]> = {
@@ -112,7 +111,7 @@
 				</span>
 				<span class="min-w-0">
 					<span class="block truncate text-[13px] font-semibold">{data.user.name} · {data.estilista?.nombreNegocio}</span>
-					<span class="text-ink-soft block text-[11px]">Plan {TIERS[data.tierNombre ?? ''] ?? '—'}</span>
+					<span class="text-ink-soft block text-[11px]">Plan {NOMBRES[data.tierNombre ?? ''] ?? '—'}</span>
 				</span>
 			</a>
 		</aside>
@@ -125,10 +124,7 @@
 					<h1 class="text-[21px] font-bold tracking-tight">{cabecera[0]}</h1>
 					<p class="text-ink-soft mt-0.5 text-[13px]">{cabecera[1]}</p>
 				</div>
-				<a
-					href="/app/calendario?nueva=1"
-					class="rounded-[13px] from-primary to-primary-light bg-gradient-to-br px-4.5 py-2.5 text-[13.5px] font-bold text-white shadow-[0_8px_18px_-6px_rgba(217,127,106,.6)] transition active:scale-[.98]"
-				>
+				<a href="/app/calendario?nueva=1" class="btn-primary rounded-[13px] px-4.5 py-2.5 text-[13.5px]">
 					+ Nueva cita
 				</a>
 			</div>

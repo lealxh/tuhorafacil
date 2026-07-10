@@ -27,14 +27,14 @@
 				type="time"
 				name="inicio-{dia}"
 				value={horarioDe(dia)?.horaInicio ?? '10:00'}
-				class="rounded-field border-line focus:border-primary bg-surface min-w-0 flex-1 border px-3 py-1.5 text-sm"
+				class="input-base bg-surface min-w-0 flex-1 px-3 py-1.5"
 			/>
 			<span class="text-ink-faint flex-none text-xs">a</span>
 			<input
 				type="time"
 				name="fin-{dia}"
 				value={horarioDe(dia)?.horaFin ?? '19:00'}
-				class="rounded-field border-line focus:border-primary bg-surface min-w-0 flex-1 border px-3 py-1.5 text-sm"
+				class="input-base bg-surface min-w-0 flex-1 px-3 py-1.5"
 			/>
 		</div>
 	</div>

@@ -173,7 +173,7 @@
 							name="nombre"
 							required
 							placeholder="Valentina Pérez"
-							class="rounded-field border-line focus:border-primary bg-surface border px-4 py-2.5 text-sm"
+							class="input-base bg-surface"
 						/>
 					</label>
 					<label class="flex flex-col gap-1.5">
@@ -183,16 +183,13 @@
 							type="tel"
 							required
 							placeholder="+56 9 8765 4321"
-							class="rounded-field border-line focus:border-primary bg-surface border px-4 py-2.5 text-sm"
+							class="input-base bg-surface"
 						/>
 					</label>
-					{#if form?.error}<p class="text-blush-deep bg-blush rounded-field px-4 py-2.5 text-sm">
+					{#if form?.error}<p class="form-error">
 							{form.error}
 						</p>{/if}
-					<button
-						type="submit"
-						class="rounded-field from-primary to-primary-light bg-gradient-to-br px-4 py-3 text-sm font-bold text-white shadow-[0_8px_18px_-8px_rgba(217,127,106,.6)] transition active:scale-[.98]"
-					>
+					<button type="submit" class="btn-primary rounded-field px-4 py-3 text-sm">
 						Confirmar reserva
 					</button>
 				</form>

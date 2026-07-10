@@ -31,7 +31,7 @@
 				required
 				autocomplete="name"
 				value={form?.nombre ?? ''}
-				class="rounded-field border-line focus:border-primary focus:ring-primary/30 border bg-surface px-4 py-2.5 text-sm"
+				class="input-base bg-surface"
 			/>
 		</label>
 		<label class="flex flex-col gap-1.5">
@@ -42,7 +42,7 @@
 				required
 				autocomplete="email"
 				value={form?.email ?? ''}
-				class="rounded-field border-line focus:border-primary focus:ring-primary/30 border bg-surface px-4 py-2.5 text-sm"
+				class="input-base bg-surface"
 			/>
 		</label>
 		<label class="flex flex-col gap-1.5">
@@ -53,19 +53,19 @@
 				required
 				minlength="8"
 				autocomplete="new-password"
-				class="rounded-field border-line focus:border-primary focus:ring-primary/30 border bg-surface px-4 py-2.5 text-sm"
+				class="input-base bg-surface"
 			/>
 			<span class="text-ink-faint text-xs">Mínimo 8 caracteres</span>
 		</label>
 
 		{#if form?.error}
-			<p class="text-blush-deep bg-blush rounded-field px-4 py-2.5 text-sm">{form.error}</p>
+			<p class="form-error">{form.error}</p>
 		{/if}
 
 		<button
 			type="submit"
 			disabled={enviando}
-			class="rounded-field from-primary to-primary-light shadow-primary/40 mt-1 bg-gradient-to-br px-4 py-3 text-sm font-bold text-white shadow-lg transition active:scale-[.98] disabled:opacity-60"
+			class="btn-primary rounded-field mt-1 px-4 py-3 text-sm disabled:opacity-60"
 		>
 			{enviando ? 'Creando…' : 'Crear cuenta'}
 		</button>

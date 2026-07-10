@@ -11,10 +11,8 @@
 
 	const clp = (n: number) => '$' + n.toLocaleString('es-CL');
 
-	const inputCls =
-		'rounded-field border-line focus:border-primary focus:ring-primary/30 border bg-surface px-4 py-2.5 text-sm';
-	const btnPrimario =
-		'rounded-field from-primary to-primary-light shadow-primary/40 bg-gradient-to-br px-5 py-3 text-sm font-bold text-white shadow-lg transition active:scale-[.98]';
+	const inputCls = 'input-base bg-surface';
+	const btnPrimario = 'btn-primary rounded-field px-5 py-3 text-sm';
 
 	// Hila el plan pagado elegido en la landing a través de los 4 pasos del wizard
 	const q = (paso: number) =>
@@ -61,7 +59,7 @@
 				<input name="comuna" placeholder="Providencia" class={inputCls} />
 			</label>
 
-			{#if form?.error}<p class="text-blush-deep bg-blush rounded-field px-4 py-2.5 text-sm">
+			{#if form?.error}<p class="form-error">
 					{form.error}
 				</p>{/if}
 			<button type="submit" class={btnPrimario}>Continuar</button>
@@ -133,7 +131,7 @@
 			>
 		</form>
 
-		{#if form?.error}<p class="text-blush-deep bg-blush rounded-field px-4 py-2.5 text-sm">
+		{#if form?.error}<p class="form-error">
 				{form.error}
 			</p>{/if}
 
@@ -155,7 +153,7 @@
 			<input type="hidden" name="plan" value={data.plan ?? ''} />
 			<HorariosEditor horarios={data.horarios} />
 
-			{#if form?.error}<p class="text-blush-deep bg-blush rounded-field px-4 py-2.5 text-sm">
+			{#if form?.error}<p class="form-error">
 					{form.error}
 				</p>{/if}
 

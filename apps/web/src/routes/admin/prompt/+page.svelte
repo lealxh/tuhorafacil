@@ -50,7 +50,7 @@
 			bind:value={texto}
 			rows="26"
 			spellcheck="false"
-			class="rounded-card border-line focus:border-primary bg-surface border p-4 font-mono text-[13px] leading-relaxed"
+			class="input-base bg-surface rounded-card p-4 font-mono text-[13px] leading-relaxed"
 		></textarea>
 
 		{#if form && 'error' in form && form.error}<p class="text-blush-deep text-sm font-semibold">
@@ -64,10 +64,7 @@
 			</p>{/if}
 
 		<div class="flex gap-2.5">
-			<button
-				type="submit"
-				class="rounded-field from-primary to-primary-light flex-1 bg-gradient-to-br px-4 py-3 text-sm font-bold text-white shadow-[0_8px_18px_-8px_rgba(217,127,106,.6)]"
-			>
+			<button type="submit" class="btn-primary rounded-field flex-1 px-4 py-3 text-sm">
 				Guardar prompt
 			</button>
 			<button

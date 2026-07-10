@@ -79,12 +79,12 @@
 			bind:value={texto}
 			rows="1"
 			placeholder="Escribe como clienta…"
-			class="rounded-field border-line focus:border-primary bg-surface flex-1 resize-none border px-3.5 py-2.5 text-sm"
+			class="input-base bg-surface flex-1 resize-none px-3.5 py-2.5"
 		></textarea>
 		<button
 			type="submit"
 			disabled={enviando || !texto.trim()}
-			class="rounded-field from-primary to-primary-light bg-gradient-to-br px-4 py-2.5 text-sm font-bold text-white shadow-[0_8px_18px_-8px_rgba(217,127,106,.6)] disabled:opacity-50"
+			class="btn-primary rounded-field px-4 py-2.5 text-sm disabled:opacity-50"
 		>
 			Enviar
 		</button>

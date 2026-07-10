@@ -11,8 +11,7 @@
 	} = $props();
 
 	const clp = (n: number) => '$' + n.toLocaleString('es-CL');
-	const inputCls =
-		'rounded-field border-line focus:border-primary focus:ring-primary/30 border bg-surface px-4 py-2.5 text-sm';
+	const inputCls = 'input-base bg-surface';
 </script>
 
 <div class="flex flex-col gap-2.5">
@@ -63,11 +62,8 @@
 			<input name="precio" type="number" required min="0" step="500" placeholder="25000" class={inputCls} />
 		</label>
 	</div>
-	{#if error}<p class="text-blush-deep bg-blush rounded-field px-4 py-2.5 text-sm">{error}</p>{/if}
-	<button
-		type="submit"
-		class="rounded-field from-primary to-primary-light shadow-primary/40 bg-gradient-to-br px-4 py-3 text-sm font-bold text-white shadow-lg transition active:scale-[.98]"
-	>
+	{#if error}<p class="form-error">{error}</p>{/if}
+	<button type="submit" class="btn-primary rounded-field px-4 py-3 text-sm">
 		+ Agregar servicio
 	</button>
 </form>

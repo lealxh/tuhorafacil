@@ -81,7 +81,7 @@
 		<button
 			type="submit"
 			disabled={pagando}
-			class="rounded-field from-primary to-primary-light mt-1 bg-gradient-to-br px-4 py-3 text-sm font-bold text-white shadow-[0_8px_18px_-8px_rgba(217,127,106,.6)] disabled:opacity-50"
+			class="btn-primary rounded-field mt-1 px-4 py-3 text-sm disabled:opacity-50"
 		>
 			{pagando ? 'Procesando…' : `Pagar ${precioLegible}`}
 		</button>

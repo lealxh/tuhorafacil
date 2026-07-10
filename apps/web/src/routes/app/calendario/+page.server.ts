@@ -1,4 +1,4 @@
-import { getDb, getEstilista } from '$lib/server/db';
+import { contextoEstilista as contexto, getDb } from '$lib/server/db';
 import {
 	bloqueosDelDia,
 	cancelarCita,
@@ -21,8 +21,8 @@ import {
 	ne,
 	servicios
 } from '@tuhorafacil/db';
-import { error, fail, redirect } from '@sveltejs/kit';
-import type { Actions, PageServerLoad, RequestEvent } from './$types';
+import { fail, redirect } from '@sveltejs/kit';
+import type { Actions, PageServerLoad } from './$types';
 
 type Vista = 'dia' | 'semana' | 'mes';
 
@@ -86,13 +86,6 @@ export const load: PageServerLoad = async (event) => {
 		})
 	};
 };
-
-async function contexto(event: RequestEvent) {
-	const db = getDb(event);
-	const estilista = await getEstilista(db, event.locals.user!.id);
-	if (!estilista) error(400, 'Sin negocio configurado');
-	return { db, estilista };
-}
 
 export const actions: Actions = {
 	crear: async (event) => {

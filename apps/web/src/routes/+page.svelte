@@ -1,11 +1,16 @@
 <script lang="ts">
+	import { clp } from '$lib/plan';
+	import type { PageData } from './$types';
+
+	let { data }: { data: PageData } = $props();
+
 	const CTA_LABEL = 'Pruébalo gratis';
 
 	const PLANES = [
 		{
+			id: 'agenda',
 			nombre: 'Agenda',
 			tagline: 'Ordena tus citas',
-			precio: '$19.000',
 			features: [
 				'Calendario simple, hecho para ti',
 				'Tu link de reserva para compartir',
@@ -17,9 +22,9 @@
 			href: '/registro'
 		},
 		{
+			id: 'recepcionista',
 			nombre: 'Recepcionista',
 			tagline: 'Tu asistente en WhatsApp',
-			precio: '$28.500',
 			features: [
 				'Todo lo del plan Agenda',
 				'Asistente que responde tu WhatsApp',
@@ -32,9 +37,9 @@
 			href: '/registro?plan=recepcionista'
 		},
 		{
+			id: 'pro',
 			nombre: 'Pro',
 			tagline: 'Que ninguna se olvide',
-			precio: '$52.250',
 			features: [
 				'Todo lo del plan Recepcionista',
 				'Recordatorios automáticos de citas',
@@ -353,7 +358,9 @@
 						{plan.tagline}
 					</div>
 					<div class="mt-4.5 flex items-baseline gap-1.5">
-						<div class="text-[34px] font-extrabold tracking-[-.02em]">{plan.precio}</div>
+						<div class="text-[34px] font-extrabold tracking-[-.02em]">
+							{clp(Number(data.preciosUsd[plan.id]))}
+						</div>
 						<div class="text-[13.5px] {plan.destacado ? 'text-[#FBEDE6]/65' : 'text-ink-soft'}">
 							CLP/mes
 						</div>

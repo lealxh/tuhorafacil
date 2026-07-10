@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import Sheet from '$lib/components/Sheet.svelte';
+	import SheetEscalada from './SheetEscalada.svelte';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -150,7 +152,7 @@
 							name="instrucciones"
 							rows="3"
 							placeholder="Ej: Tuteo chileno. Pedir abono del 30% para balayage. No agendar después de las 18:00 los viernes."
-							class="rounded-field border-line focus:border-primary bg-surface border px-3.5 py-2.5 text-sm"
+							class="input-base bg-surface"
 							>{data.config?.instrucciones ?? ''}</textarea
 						>
 					</label>
@@ -162,7 +164,7 @@
 							name="infoExtra"
 							rows="2"
 							placeholder="Ej: link de pago, cómo llegar, estacionamiento…"
-							class="rounded-field border-line focus:border-primary bg-surface border px-3.5 py-2.5 text-sm"
+							class="input-base bg-surface"
 							>{data.config?.infoExtra ?? ''}</textarea
 						>
 					</label>
@@ -221,72 +223,7 @@
 </main>
 
 {#if escaladaSel}
-	<div
-		class="fixed inset-0 z-40 flex items-end lg:items-center lg:justify-center lg:p-6 bg-[rgba(40,20,18,.4)]"
-		onclick={(e) => e.target === e.currentTarget && (escaladaSel = null)}
-		onkeydown={(e) => e.key === 'Escape' && (escaladaSel = null)}
-		role="presentation"
-	>
-		<div
-			class="bg-background w-full rounded-t-[28px] px-6 pt-2.5 pb-8 lg:max-w-md lg:rounded-[28px] lg:pb-6"
-		>
-			<div class="mx-auto mb-4 h-1.5 w-10 rounded-full bg-[#E0C4B8]"></div>
-			<h2 class="text-xl font-bold tracking-tight">{escaladaSel.clienta}</h2>
-			<p class="text-ink-soft mt-0.5 text-xs">Escalado por tu agente</p>
-
-			<div class="mt-4 flex flex-col gap-2">
-				{#each escaladaSel.mensajes as mensaje, i (i)}
-					<div
-						class="max-w-[85%] rounded-2xl px-3.5 py-2 text-sm {mensaje.rol === 'clienta'
-							? 'self-start bg-white shadow-sm'
-							: 'bg-blush text-ink self-end'}"
-					>
-						{mensaje.contenido}
-					</div>
-				{/each}
-			</div>
-
-			<div class="mt-5 flex gap-3">
-				<form
-					method="POST"
-					action="?/seguirAgente"
-					use:enhance={() =>
-						async ({ update }) => {
-							escaladaSel = null;
-							await update();
-						}}
-					class="flex-1"
-				>
-					<input type="hidden" name="id" value={escaladaSel.id} />
-					<button
-						type="submit"
-						class="rounded-field border-line text-ink-soft w-full border bg-white px-4 py-3 text-sm font-bold"
-					>
-						Que siga el agente
-					</button>
-				</form>
-				<form
-					method="POST"
-					action="?/responderYo"
-					use:enhance={() =>
-						async ({ update }) => {
-							escaladaSel = null;
-							await update();
-						}}
-					class="flex-1"
-				>
-					<input type="hidden" name="id" value={escaladaSel.id} />
-					<button
-						type="submit"
-						class="rounded-field from-primary to-primary-light w-full bg-gradient-to-br px-4 py-3 text-sm font-bold text-white shadow-[0_8px_18px_-8px_rgba(217,127,106,.6)]"
-					>
-						Responder yo
-					</button>
-				</form>
-			</div>
-			<p class="text-ink-faint mt-3 text-center text-[11px]">
-				"Responder yo" pausa el agente 1 hora en esta conversación: contéstale desde tu WhatsApp.
-			</p>
-		</div>
-	</div>
+	<Sheet onCerrar={() => (escaladaSel = null)}>
+		<SheetEscalada escalada={escaladaSel} onCerrar={() => (escaladaSel = null)} />
+	</Sheet>
 {/if}

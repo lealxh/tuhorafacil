@@ -19,9 +19,6 @@
 		['servicios', 'Servicios'],
 		['horarios', 'Horarios']
 	] as const;
-	const inputCls =
-		'rounded-field border-line focus:border-primary focus:ring-primary/30 border bg-surface px-4 py-2.5 text-sm';
-
 	async function copiar() {
 		await navigator.clipboard.writeText(url);
 		copiado = true;
@@ -42,10 +39,7 @@
 			<p class="text-ink-soft min-w-0 flex-1 truncate text-sm">
 				tuhorafacil.cl/<span class="text-ink font-bold">@{slug}</span>
 			</p>
-			<button
-				onclick={copiar}
-				class="rounded-field from-primary to-primary-light flex-none bg-gradient-to-br px-4 py-2.5 text-xs font-bold text-white shadow-[0_6px_14px_-6px_rgba(217,127,106,.7)]"
-			>
+			<button onclick={copiar} class="btn-primary rounded-field flex-none px-4 py-2.5 text-xs">
 				{copiado ? 'Copiado ✓' : 'Copiar link'}
 			</button>
 		</div>
@@ -57,7 +51,7 @@
 			<div class="lg:hidden">{@render linkBar()}</div>
 
 			<!-- Tabs -->
-			<div class="flex gap-1 rounded-2xl bg-[#F3E4DE] p-1">
+			<div class="bg-track flex gap-1 rounded-2xl p-1">
 				{#each TABS as [valor, etiqueta] (valor)}
 					<button
 						onclick={() => (tab = valor)}
@@ -88,7 +82,7 @@
 							/>
 						{:else}
 							<div
-								class="border-line flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-dashed bg-[#F1E2DC] text-2xl"
+								class="border-line bg-line flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-dashed text-2xl"
 							>
 								📷
 							</div>
@@ -129,7 +123,7 @@
 							rows="3"
 							maxlength="300"
 							placeholder="Peluquería y color en Providencia 🌿 Especialista en balayage. Reserva tu hora aquí abajo 👇"
-							class="{inputCls} mt-3 w-full">{data.estilista?.bio ?? ''}</textarea
+							class="input-base bg-surface mt-3 w-full">{data.estilista?.bio ?? ''}</textarea
 						>
 					</div>
 
@@ -143,7 +137,7 @@
 								name="nombreNegocio"
 								required
 								value={data.estilista?.nombreNegocio ?? ''}
-								class={inputCls}
+								class="input-base bg-surface"
 							/>
 						</label>
 						<div class="flex flex-col gap-1.5">
@@ -170,23 +164,18 @@
 								name="comuna"
 								value={data.estilista?.comuna ?? ''}
 								placeholder="Providencia"
-								class={inputCls}
+								class="input-base bg-surface"
 							/>
 						</label>
 					</div>
 
-					{#if form && 'error' in form && form.error}<p
-							class="text-blush-deep bg-blush rounded-field px-4 py-2.5 text-sm"
-						>
+					{#if form && 'error' in form && form.error}<p class="form-error">
 							{form.error}
 						</p>{/if}
 					{#if form && 'guardado' in form}<p class="text-success text-xs font-semibold">
 							Guardado ✓
 						</p>{/if}
-					<button
-						type="submit"
-						class="rounded-field from-primary to-primary-light bg-gradient-to-br px-4 py-3 text-sm font-bold text-white shadow-[0_8px_18px_-8px_rgba(217,127,106,.6)] transition active:scale-[.98]"
-					>
+					<button type="submit" class="btn-primary rounded-field px-4 py-3 text-sm">
 						Guardar
 					</button>
 				</form>
@@ -209,9 +198,7 @@
 						Tus horarios de atención
 					</h2>
 					<HorariosEditor horarios={data.horarios} />
-					{#if form && 'error' in form && form.error}<p
-							class="text-blush-deep bg-blush rounded-field px-4 py-2.5 text-sm"
-						>
+					{#if form && 'error' in form && form.error}<p class="form-error">
 							{form.error}
 						</p>{/if}
 					{#if form && 'guardado' in form}<p
@@ -219,10 +206,7 @@
 						>
 							Horarios guardados ✓
 						</p>{/if}
-					<button
-						type="submit"
-						class="rounded-field from-primary to-primary-light mt-1 bg-gradient-to-br px-4 py-3 text-sm font-bold text-white shadow-[0_8px_18px_-8px_rgba(217,127,106,.6)] transition active:scale-[.98]"
-					>
+					<button type="submit" class="btn-primary rounded-field mt-1 px-4 py-3 text-sm">
 						Guardar horarios
 					</button>
 				</form>
