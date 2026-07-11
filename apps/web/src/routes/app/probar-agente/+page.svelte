@@ -6,11 +6,13 @@
 
 	let texto = $state('');
 	let enviando = $state(false);
+	// Mensaje mostrado optimistamente mientras el server procesa (como WhatsApp)
+	let pendiente: string | null = $state(null);
 	let hilo: HTMLDivElement | undefined = $state();
 
 	// Auto-scroll al final cuando llegan mensajes nuevos
 	$effect(() => {
-		data.mensajes.length;
+		void [data.mensajes.length, pendiente, enviando];
 		hilo?.scrollTo({ top: hilo.scrollHeight });
 	});
 
@@ -60,10 +62,21 @@
 				{mensaje.contenido}
 			</div>
 		{:else}
-			<p class="text-ink-soft m-auto max-w-xs text-center text-sm">
-				Escríbele algo como <strong>«Hola, quiero agendar un corte para mañana»</strong> y mira cómo responde.
-			</p>
+			{#if !pendiente}
+				<p class="text-ink-soft m-auto max-w-xs text-center text-sm">
+					Escríbele algo como <strong>«Hola, quiero agendar un corte para mañana»</strong> y mira cómo
+					responde.
+				</p>
+			{/if}
 		{/each}
+		{#if pendiente}
+			<!-- Optimista: la burbuja aparece al instante; el server la confirma con el update -->
+			<div
+				class="bg-blush text-ink max-w-[85%] self-end rounded-2xl px-3.5 py-2 text-sm whitespace-pre-wrap lg:max-w-[70%]"
+			>
+				{pendiente}
+			</div>
+		{/if}
 		{#if enviando}
 			<div class="self-start rounded-2xl bg-white px-3.5 py-2 text-sm shadow-sm">
 				<span class="text-ink-faint">escribiendo…</span>
@@ -80,11 +93,16 @@
 		action="?/enviar"
 		class="mt-2 flex items-end gap-2 pb-3 lg:pb-0"
 		use:enhance={() => {
+			// enhance ya capturó el FormData: se puede vaciar el textarea al tiro
+			pendiente = texto.trim();
+			texto = '';
 			enviando = true;
-			return async ({ update }) => {
+			return async ({ result, update }) => {
 				await update();
 				enviando = false;
-				texto = '';
+				// Si falló, no perder lo escrito: vuelve al textarea para reintentar
+				if (result.type !== 'success' && pendiente) texto = pendiente;
+				pendiente = null;
 			};
 		}}
 	>
