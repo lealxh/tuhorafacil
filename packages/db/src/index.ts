@@ -13,4 +13,4 @@ export * from './auth-schema';
 // Única instancia de drizzle-orm para todo el monorepo: los consumidores
 // importan los operadores desde aquí, nunca desde 'drizzle-orm' directo
 // (pnpm crea instancias paralelas por peer-set y los tipos dejan de calzar).
-export { and, asc, desc, eq, gte, like, lte, ne, sql } from 'drizzle-orm';
+export { and, asc, desc, eq, gte, isNull, like, lte, ne, sql } from 'drizzle-orm';

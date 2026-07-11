@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { reiniciarSimulacion, simularMensaje } from '../agente/simular';
+import { generarRecordatorios } from '../recordatorios/generar';
 
 // Canal de prueba: la web llama a estos endpoints server-to-server para
 // conversar con el agente sin WhatsApp. Protegido por secreto compartido para
@@ -21,6 +22,16 @@ mock.post('/chat', async (c) => {
 
   const resultado = await simularMensaje(c.env, estilistaId, texto);
   return c.json(resultado);
+});
+
+// Dispara la generación de recordatorios sin esperar al cron (para la vista de prueba)
+mock.post('/recordatorios', async (c) => {
+  const body = await c.req.json<{ estilistaId?: string }>().catch(() => null);
+  const estilistaId = body?.estilistaId?.trim();
+  if (!estilistaId) return c.json({ error: 'estilistaId es requerido' }, 400);
+
+  const generados = await generarRecordatorios(c.env, estilistaId);
+  return c.json({ generados });
 });
 
 mock.post('/chat/reset', async (c) => {

@@ -1,13 +1,6 @@
 import type Anthropic from '@anthropic-ai/sdk';
-import { cancelarCita, crearCita, slotsParaServicio } from '@tuhorafacil/agenda';
+import { cancelarCita, crearCita, fechaLegible, slotsParaServicio } from '@tuhorafacil/agenda';
 import { and, citas, clientasFinales, conversaciones, eq, servicios, type Db } from '@tuhorafacil/db';
-
-/** '2026-07-06' → 'lunes 6 de julio' — para que el modelo no calcule el día él mismo */
-function fechaLegible(fecha: string): string {
-  return new Intl.DateTimeFormat('es-CL', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(
-    new Date(`${fecha}T12:00:00Z`)
-  );
-}
 
 export const TOOLS: Anthropic.Tool[] = [
   {

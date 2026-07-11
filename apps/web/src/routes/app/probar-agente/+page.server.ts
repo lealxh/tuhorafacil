@@ -1,3 +1,4 @@
+import { llamarApi } from '$lib/server/api';
 import { getDb, getEstilista } from '$lib/server/db';
 import { and, asc, clientasFinales, conversaciones, eq, mensajes } from '@tuhorafacil/db';
 import { error, fail, redirect } from '@sveltejs/kit';
@@ -44,19 +45,6 @@ async function contexto(event: RequestEvent) {
 	if (!estilista) error(400, 'Sin negocio configurado');
 	const env = event.platform!.env;
 	return { estilista, env };
-}
-
-/**
- * Llama a la api por service binding (en producción Cloudflare bloquea el fetch
- * a workers.dev de la propia cuenta); en dev local cae al fetch normal.
- */
-function llamarApi(env: App.Platform['env'], ruta: string, body: unknown): Promise<Response> {
-	const req = new Request(`${env.API_BASE_URL}${ruta}`, {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json', 'X-Mock-Secret': env.MOCK_CHAT_SECRET },
-		body: JSON.stringify(body)
-	});
-	return env.API ? env.API.fetch(req) : fetch(req);
 }
 
 export const actions: Actions = {

@@ -227,6 +227,33 @@ export const suscripciones = sqliteTable(
   (t) => [index('suscripciones_estilista_idx').on(t.estilistaId)],
 );
 
+export const recordatorios = sqliteTable(
+  'recordatorios',
+  {
+    id: uuid(),
+    estilistaId: text('estilista_id')
+      .notNull()
+      .references(() => estilistas.id, { onDelete: 'cascade' }),
+    citaId: text('cita_id')
+      .notNull()
+      .unique() // un recordatorio por cita: el cron es idempotente
+      .references(() => citas.id, { onDelete: 'cascade' }),
+    clientaId: text('clienta_id')
+      .notNull()
+      .references(() => clientasFinales.id),
+    contenido: text('contenido').notNull(),
+    // 'simulado' hasta que Meta apruebe las plantillas y exista envío real
+    estado: text('estado', { enum: ['simulado', 'enviado'] }).notNull().default('simulado'),
+    // Lo que contestó la clienta con los botones del mensaje (null = sin responder)
+    respuesta: text('respuesta', { enum: ['confirmada', 'reagendar'] }),
+    respondidoAt: timestampMs('respondido_at'),
+    createdAt: timestampMs('created_at')
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (t) => [index('recordatorios_estilista_idx').on(t.estilistaId)],
+);
+
 // Configuración global de la plataforma (clave→valor). Ej: 'system_prompt' editable por admin.
 export const configuracion = sqliteTable('configuracion', {
   clave: text('clave').primaryKey(),

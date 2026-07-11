@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { generarRecordatorios } from './recordatorios/generar';
 import { health } from './routes/health';
 import { mock } from './routes/mock';
 import { webhook } from './routes/webhook';
@@ -16,4 +17,10 @@ app.onError((err, c) => {
   return c.json({ error: 'internal_error' }, 500);
 });
 
-export default app;
+export default {
+  fetch: app.fetch,
+  // Cron diario (14:00 UTC ≈ 10-11h Chile): recordatorios para las citas de mañana
+  async scheduled(_controller: ScheduledController, env: Env, ctx: ExecutionContext) {
+    ctx.waitUntil(generarRecordatorios(env));
+  }
+};
