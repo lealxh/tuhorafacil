@@ -19,8 +19,9 @@ app.onError((err, c) => {
 
 export default {
   fetch: app.fetch,
-  // Cron horario: recordatorios de las citas de hoy según las reglas
-  // configurables por admin (batch matinal + rezagadas con aviso mínimo)
+  // Cada 5 min: recordatorios de las citas de hoy según las reglas configurables
+  // por admin (batch matinal + rezagadas con aviso mínimo). La frecuencia además
+  // mantiene tibios el Worker y D1 (keep-warm contra cold starts de ~20s).
   async scheduled(_controller: ScheduledController, env: Env, ctx: ExecutionContext) {
     ctx.waitUntil(generarRecordatorios(env));
   }

@@ -53,7 +53,10 @@ export const actions: Actions = {
 		const texto = String((await event.request.formData()).get('texto') ?? '').trim();
 		if (!texto) return fail(400, { error: 'Escribe un mensaje' });
 
+		const inicio = Date.now();
 		const res = await llamarApi(env, '/mock/chat', { estilistaId: estilista.id, texto });
+		// La diferencia con el mock_chat_ms de la api aísla el overhead del binding/arranque
+		console.log(JSON.stringify({ event: 'mock_chat_proxy_ms', ms: Date.now() - inicio, ok: res.ok }));
 		if (!res.ok) return fail(502, { error: 'No se pudo contactar al agente' });
 		return { enviado: true };
 	},

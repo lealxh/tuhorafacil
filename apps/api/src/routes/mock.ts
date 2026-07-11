@@ -20,7 +20,10 @@ mock.post('/chat', async (c) => {
   const texto = body?.texto?.trim();
   if (!estilistaId || !texto) return c.json({ error: 'estilistaId y texto son requeridos' }, 400);
 
+  const inicio = Date.now();
   const resultado = await simularMensaje(c.env, estilistaId, texto);
+  // Para diagnosticar latencias (cold start vs LLM): comparar con el ms del lado web
+  console.log(JSON.stringify({ event: 'mock_chat_ms', ms: Date.now() - inicio, gate: resultado.gate ?? false }));
   return c.json(resultado);
 });
 

@@ -13,7 +13,9 @@
     }
   ],
   "triggers": {
-    "crons": ["0 * * * *"]
+    // Cada 5 min: recordatorios (idempotente y barato) y de paso keep-warm
+    // del Worker y su conexión D1 (el primer request en frío llegó a tardar ~20s)
+    "crons": ["*/5 * * * *"]
   },
   "observability": {
     "enabled": true,
