@@ -14,11 +14,15 @@
 	const DOWS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 	const PX_POR_MIN = 54 / 60;
 
-	let sheet: 'nueva' | 'bloquear' | null = $state(
-		page.url.searchParams.has('nueva') ? 'nueva' : null
-	);
+	let sheet: 'nueva' | 'bloquear' | null = $state(null);
 	let citaSel: (typeof data.citas)[number] | null = $state(null);
 	let bloqueoSel: (typeof data.bloqueos)[number] | null = $state(null);
+
+	// Reactivo (no solo al montar): "+ Nueva cita" del header navega a ?nueva=1
+	// estando ya en esta página, y eso no remonta el componente
+	$effect(() => {
+		if (page.url.searchParams.has('nueva')) sheet = 'nueva';
+	});
 
 	function cerrar() {
 		sheet = null;
