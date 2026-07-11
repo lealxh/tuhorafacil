@@ -9,6 +9,7 @@
 			<nav class="flex gap-4 text-sm font-semibold">
 				<a href="/admin" class="text-ink-soft">Cuentas</a>
 				<a href="/admin/prompt" class="text-ink-soft">Prompt del agente</a>
+				<a href="/admin/recordatorios" class="text-ink-soft">Recordatorios</a>
 			</nav>
 		</div>
 		<a href="/app" class="text-blush-deep text-sm font-semibold">‹ Volver a la app</a>

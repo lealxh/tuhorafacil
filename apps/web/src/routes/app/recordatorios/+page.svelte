@@ -36,8 +36,9 @@
 			class="rounded-card bg-amber-100/60 border-amber-300/50 border px-4 py-2.5 text-xs font-semibold text-amber-800"
 		>
 			Vista de prueba: esto es lo que recibirá cada clienta por WhatsApp cuando Meta apruebe las
-			plantillas. Mientras tanto, los recordatorios se generan igual (cada mañana, para las citas
-			del día siguiente) y se muestran aquí. Los botones simulan la respuesta de la clienta.
+			plantillas. Mientras tanto, los recordatorios se generan igual (cada hora, para las citas de
+			hoy: aviso matinal + rezagadas con anticipación mínima) y se muestran aquí. Los botones
+			simulan la respuesta de la clienta.
 		</div>
 
 		<form
@@ -56,13 +57,13 @@
 				disabled={generando}
 				class="btn-primary rounded-field w-full px-4 py-3 text-sm disabled:opacity-50 lg:w-auto"
 			>
-				{generando ? 'Generando…' : 'Generar recordatorios de mañana ahora'}
+				{generando ? 'Generando…' : 'Generar los recordatorios de hoy ahora'}
 			</button>
 		</form>
 		{#if form && 'generados' in form}
 			<p class="text-success text-xs font-semibold">
 				{form.generados === 0
-					? 'Nada nuevo que recordar: no hay citas de mañana sin recordatorio.'
+					? 'Nada nuevo que recordar: ninguna cita de hoy corresponde según las reglas de envío.'
 					: `${form.generados} ${form.generados === 1 ? 'recordatorio generado' : 'recordatorios generados'} ✓`}
 			</p>
 		{/if}
@@ -111,8 +112,8 @@
 				</div>
 			{:else}
 				<p class="text-ink-soft rounded-card bg-white px-4 py-6 text-center text-sm shadow-sm">
-					Aún no hay recordatorios. Crea una cita para mañana en el calendario y genera los de
-					mañana con el botón de arriba.
+					Aún no hay recordatorios. Crea una cita para hoy (a una hora que aún no llegue) en el
+					calendario y usa el botón de arriba.
 				</p>
 			{/each}
 		</div>

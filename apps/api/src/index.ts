@@ -19,7 +19,8 @@ app.onError((err, c) => {
 
 export default {
   fetch: app.fetch,
-  // Cron diario (14:00 UTC ≈ 10-11h Chile): recordatorios para las citas de mañana
+  // Cron horario: recordatorios de las citas de hoy según las reglas
+  // configurables por admin (batch matinal + rezagadas con aviso mínimo)
   async scheduled(_controller: ScheduledController, env: Env, ctx: ExecutionContext) {
     ctx.waitUntil(generarRecordatorios(env));
   }

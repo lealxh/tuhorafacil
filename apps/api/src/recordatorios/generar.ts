@@ -1,9 +1,17 @@
-import { fechaLegible, fechaLocalHoy } from '@tuhorafacil/agenda';
-import { sumarDias } from '@tuhorafacil/core';
+import {
+  CLAVE_RECORDATORIOS_HORA,
+  CLAVE_RECORDATORIOS_HORAS_MIN,
+  correspondeRecordatorio,
+  fechaLocalHoy,
+  horaLocalAhora,
+  instanteLocal,
+  parseConfigRecordatorios
+} from '@tuhorafacil/agenda';
 import {
   and,
   citas,
   clientasFinales,
+  configuracion,
   createDb,
   eq,
   estilistas,
@@ -15,30 +23,39 @@ import {
 
 export function construirRecordatorio(datos: {
   clienta: string;
-  fecha: string;
   hora: string;
   servicio: string;
   negocio: string;
 }): string {
   return (
-    `¡Hola ${datos.clienta}! 👋 Te recordamos tu hora de mañana ${fechaLegible(datos.fecha)} ` +
-    `a las ${datos.hora} para ${datos.servicio} en ${datos.negocio}. ` +
-    `¿Nos confirmas? 👇`
+    `¡Hola ${datos.clienta}! 👋 Te recordamos tu hora de hoy a las ${datos.hora} ` +
+    `para ${datos.servicio} en ${datos.negocio}. ¿Nos confirmas? 👇`
   );
 }
 
 /**
- * Genera los recordatorios para las citas de mañana de las cuentas con tier Pro.
- * Idempotente (un recordatorio por cita), así que el cron puede correr sin miedo.
- * Por ahora solo los persiste ('simulado'); el envío real por WhatsApp llega con
- * las plantillas aprobadas por Meta.
+ * Genera los recordatorios de las citas de HOY para las cuentas con tier Pro,
+ * según las reglas configurables (ver ConfigRecordatorios en packages/agenda):
+ * batch matinal a la hora configurada + rezagadas con horas mínimas de aviso.
+ * Idempotente (un recordatorio por cita), pensado para un cron horario.
+ * Por ahora solo los persiste ('simulado'); el envío real por WhatsApp llega
+ * con las plantillas aprobadas por Meta.
  */
 export async function generarRecordatorios(env: Env, estilistaId?: string): Promise<number> {
   const db = createDb(env.DB);
-  const manana = sumarDias(fechaLocalHoy(), 1);
+  const hoy = fechaLocalHoy();
+  const ahora = horaLocalAhora();
+
+  const filas = await db.query.configuracion.findMany();
+  const valorDe = (clave: string) => filas.find((f) => f.clave === clave)?.valor;
+  const config = parseConfigRecordatorios(
+    valorDe(CLAVE_RECORDATORIOS_HORA),
+    valorDe(CLAVE_RECORDATORIOS_HORAS_MIN)
+  );
+  const inicioBatch = instanteLocal(hoy, config.horaEnvio);
 
   const condiciones = [
-    eq(citas.fecha, manana),
+    eq(citas.fecha, hoy),
     eq(citas.estado, 'confirmada'),
     eq(estilistas.estado, 'activa'),
     eq(tiers.tieneRecordatorios, true),
@@ -46,12 +63,13 @@ export async function generarRecordatorios(env: Env, estilistaId?: string): Prom
   ];
   if (estilistaId) condiciones.push(eq(citas.estilistaId, estilistaId));
 
-  const pendientes = await db
+  const candidatas = await db
     .select({
       citaId: citas.id,
       estilistaId: citas.estilistaId,
       clientaId: citas.clientaId,
       horaInicio: citas.horaInicio,
+      creadaAt: citas.createdAt,
       clienta: clientasFinales.nombre,
       servicio: servicios.nombre,
       negocio: estilistas.nombreNegocio
@@ -64,6 +82,14 @@ export async function generarRecordatorios(env: Env, estilistaId?: string): Prom
     .leftJoin(recordatorios, eq(recordatorios.citaId, citas.id))
     .where(and(...condiciones));
 
+  const pendientes = candidatas.filter((cita) =>
+    correspondeRecordatorio(
+      { horaInicio: cita.horaInicio, creadaAntesDelEnvio: cita.creadaAt < inicioBatch },
+      ahora,
+      config
+    )
+  );
+
   for (const cita of pendientes) {
     await db.insert(recordatorios).values({
       estilistaId: cita.estilistaId,
@@ -71,7 +97,6 @@ export async function generarRecordatorios(env: Env, estilistaId?: string): Prom
       clientaId: cita.clientaId,
       contenido: construirRecordatorio({
         clienta: cita.clienta,
-        fecha: manana,
         hora: cita.horaInicio,
         servicio: cita.servicio,
         negocio: cita.negocio
@@ -79,6 +104,6 @@ export async function generarRecordatorios(env: Env, estilistaId?: string): Prom
     });
   }
 
-  console.log(JSON.stringify({ event: 'recordatorios_generados', fecha: manana, cantidad: pendientes.length }));
+  console.log(JSON.stringify({ event: 'recordatorios_generados', fecha: hoy, cantidad: pendientes.length }));
   return pendientes.length;
 }
