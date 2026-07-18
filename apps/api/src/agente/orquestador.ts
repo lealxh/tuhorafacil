@@ -22,7 +22,7 @@ import {
 } from '@tuhorafacil/db';
 import { construirSystemPrompt } from '@tuhorafacil/agenda';
 import { enviarTexto } from '../whatsapp/enviar';
-import type { CambioValor, MensajeEntrante, WebhookPayload } from '../whatsapp/tipos';
+import type { WebhookPayload } from '../whatsapp/tipos';
 import { ejecutarTool, TOOLS, type ContextoTools } from './tools';
 
 const MODELO = 'claude-haiku-4-5';
@@ -36,17 +36,39 @@ const FALLBACK = 'Dame un momento y te respondo 🙏';
 const LIMITE_ALCANZADO =
   'En este momento no puedo agendar por aquí 🙏 La estilista te responderá personalmente apenas pueda.';
 
+/** Mensaje entrante ya normalizado, independiente del canal (Meta directo, Kapso, …). */
+export interface EntradaMensaje {
+  phoneNumberId: string;
+  /** E.164 con + */
+  telefono: string;
+  nombrePerfil: string;
+  tipo: string;
+  texto?: string;
+}
+
+/** Mapper del webhook de la WhatsApp Cloud API (Meta directo / webhook simulado DEMO_PHONE_ID). */
 export async function procesarWebhook(env: Env, payload: WebhookPayload): Promise<void> {
   for (const entry of payload.entry ?? []) {
     for (const cambio of entry.changes ?? []) {
       const valor = cambio.value;
-      if (!valor?.metadata?.phone_number_id) continue;
+      const phoneNumberId = valor?.metadata?.phone_number_id;
+      if (!phoneNumberId) continue;
       try {
         if (cambio.field === 'smb_message_echoes' || valor.message_echoes?.length) {
-          await manejarEcos(env, valor);
+          for (const eco of valor.message_echoes ?? []) {
+            if (!eco.to) continue;
+            await procesarEco(env, { phoneNumberId, telefonoClienta: normalizarTelefono(eco.to) });
+          }
         } else {
           for (const mensaje of valor.messages ?? []) {
-            await manejarMensajeEntrante(env, valor, mensaje);
+            if (!mensaje.from) continue;
+            await procesarMensajeEntrante(env, {
+              phoneNumberId,
+              telefono: normalizarTelefono(mensaje.from),
+              nombrePerfil: valor.contacts?.find((c) => c.wa_id === mensaje.from)?.profile?.name ?? 'Clienta',
+              tipo: mensaje.type ?? 'text',
+              texto: mensaje.text?.body
+            });
           }
         }
       } catch (e) {
@@ -57,36 +79,34 @@ export async function procesarWebhook(env: Env, payload: WebhookPayload): Promis
 }
 
 /** Coexistence: la estilista respondió desde su teléfono → pausar el agente en esa conversación. */
-async function manejarEcos(env: Env, valor: CambioValor): Promise<void> {
+export async function procesarEco(
+  env: Env,
+  eco: { phoneNumberId: string; telefonoClienta: string }
+): Promise<void> {
   const db = createDb(env.DB);
-  const estilista = await estilistaPorPhoneId(db, valor.metadata!.phone_number_id!);
+  const estilista = await estilistaPorPhoneId(db, eco.phoneNumberId);
   if (!estilista) return;
 
-  for (const eco of valor.message_echoes ?? []) {
-    if (!eco.to) continue;
-    const clienta = await db.query.clientasFinales.findFirst({
-      where: and(eq(clientasFinales.estilistaId, estilista.id), eq(clientasFinales.telefono, normalizarTelefono(eco.to)))
-    });
-    if (!clienta) continue;
-    await db
-      .update(conversaciones)
-      .set({ agentePausadoHasta: new Date(Date.now() + COOLDOWN_COEXISTENCE_MS) })
-      .where(and(eq(conversaciones.estilistaId, estilista.id), eq(conversaciones.clientaId, clienta.id)));
-  }
+  const clienta = await db.query.clientasFinales.findFirst({
+    where: and(eq(clientasFinales.estilistaId, estilista.id), eq(clientasFinales.telefono, eco.telefonoClienta))
+  });
+  if (!clienta) return;
+  await db
+    .update(conversaciones)
+    .set({ agentePausadoHasta: new Date(Date.now() + COOLDOWN_COEXISTENCE_MS) })
+    .where(and(eq(conversaciones.estilistaId, estilista.id), eq(conversaciones.clientaId, clienta.id)));
 }
 
-async function manejarMensajeEntrante(env: Env, valor: CambioValor, mensaje: MensajeEntrante): Promise<void> {
-  if (!mensaje.from) return;
+export async function procesarMensajeEntrante(env: Env, entrada: EntradaMensaje): Promise<void> {
   const db = createDb(env.DB);
 
-  const estilista = await estilistaPorPhoneId(db, valor.metadata!.phone_number_id!);
+  const estilista = await estilistaPorPhoneId(db, entrada.phoneNumberId);
   if (!estilista) {
-    console.log(JSON.stringify({ event: 'webhook_sin_estilista', phoneNumberId: valor.metadata!.phone_number_id }));
+    console.log(JSON.stringify({ event: 'webhook_sin_estilista', phoneNumberId: entrada.phoneNumberId }));
     return;
   }
 
-  const telefono = normalizarTelefono(mensaje.from);
-  const nombrePerfil = valor.contacts?.find((c) => c.wa_id === mensaje.from)?.profile?.name ?? 'Clienta';
+  const { telefono, nombrePerfil } = entrada;
 
   let clienta = await db.query.clientasFinales.findFirst({
     where: and(eq(clientasFinales.estilistaId, estilista.id), eq(clientasFinales.telefono, telefono))
@@ -99,7 +119,7 @@ async function manejarMensajeEntrante(env: Env, valor: CambioValor, mensaje: Men
   conversacion ??= (await db.insert(conversaciones).values({ estilistaId: estilista.id, clientaId: clienta.id }).returning())[0];
   await db.update(conversaciones).set({ ultimoMensajeAt: new Date() }).where(eq(conversaciones.id, conversacion.id));
 
-  const contenido = mensaje.type === 'text' ? (mensaje.text?.body ?? '') : `[mensaje de tipo ${mensaje.type}]`;
+  const contenido = entrada.tipo === 'text' ? (entrada.texto ?? '') : `[mensaje de tipo ${entrada.tipo}]`;
   await db.insert(mensajes).values({ conversacionId: conversacion.id, rol: 'clienta', contenido });
 
   // Gates: estado de la cuenta, tier, agente activo, cooldown por Coexistence
@@ -111,7 +131,7 @@ async function manejarMensajeEntrante(env: Env, valor: CambioValor, mensaje: Men
   if (conversacion.agentePausadoHasta && conversacion.agentePausadoHasta.getTime() > Date.now()) return;
 
   const responder = async (texto: string, tokens?: { entrada: number; salida: number }) => {
-    await enviarTexto(env.WA_ACCESS_TOKEN || undefined, valor.metadata!.phone_number_id!, mensaje.from!, texto);
+    await enviarTexto(env.WA_ACCESS_TOKEN || undefined, entrada.phoneNumberId, telefono, texto);
     await db.insert(mensajes).values({
       conversacionId: conversacion.id,
       rol: 'agente',
@@ -133,7 +153,7 @@ async function manejarMensajeEntrante(env: Env, valor: CambioValor, mensaje: Men
     }
   }
 
-  if (mensaje.type !== 'text') {
+  if (entrada.tipo !== 'text') {
     await responder('Por ahora solo puedo leer mensajes de texto 🙏 ¿Me lo puedes escribir?');
     return;
   }
