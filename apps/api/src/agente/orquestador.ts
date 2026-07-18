@@ -44,6 +44,8 @@ export interface EntradaMensaje {
   nombrePerfil: string;
   tipo: string;
   texto?: string;
+  /** wamid del mensaje: si viene, deduplica reintentos de webhook */
+  waId?: string;
 }
 
 /** Mapper del webhook de la WhatsApp Cloud API (Meta directo / webhook simulado DEMO_PHONE_ID). */
@@ -67,7 +69,8 @@ export async function procesarWebhook(env: Env, payload: WebhookPayload): Promis
               telefono: normalizarTelefono(mensaje.from),
               nombrePerfil: valor.contacts?.find((c) => c.wa_id === mensaje.from)?.profile?.name ?? 'Clienta',
               tipo: mensaje.type ?? 'text',
-              texto: mensaje.text?.body
+              texto: mensaje.text?.body,
+              waId: mensaje.id
             });
           }
         }
@@ -120,7 +123,16 @@ export async function procesarMensajeEntrante(env: Env, entrada: EntradaMensaje)
   await db.update(conversaciones).set({ ultimoMensajeAt: new Date() }).where(eq(conversaciones.id, conversacion.id));
 
   const contenido = entrada.tipo === 'text' ? (entrada.texto ?? '') : `[mensaje de tipo ${entrada.tipo}]`;
-  await db.insert(mensajes).values({ conversacionId: conversacion.id, rol: 'clienta', contenido });
+  const insertado = await db
+    .insert(mensajes)
+    .values({ conversacionId: conversacion.id, rol: 'clienta', contenido, waId: entrada.waId })
+    .onConflictDoNothing()
+    .returning({ id: mensajes.id });
+  // Reintento del webhook con el mismo wamid: ya fue procesado, no responder de nuevo
+  if (entrada.waId && insertado.length === 0) {
+    console.log(JSON.stringify({ event: 'mensaje_duplicado', waId: entrada.waId }));
+    return;
+  }
 
   // Gates: estado de la cuenta, tier, agente activo, cooldown por Coexistence
   if (estilista.estado !== 'activa' || estilista.waEstado !== 'activo') return;
@@ -277,7 +289,7 @@ async function estilistaPorPhoneId(db: Db, phoneNumberId: string) {
   return db.query.estilistas.findFirst({ where: eq(estilistas.waPhoneNumberId, phoneNumberId) });
 }
 
-function normalizarTelefono(waId: string): string {
+export function normalizarTelefono(waId: string): string {
   return waId.startsWith('+') ? waId : `+${waId}`;
 }
 

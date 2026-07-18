@@ -165,6 +165,8 @@ export const mensajes = sqliteTable(
       .references(() => conversaciones.id, { onDelete: 'cascade' }),
     rol: text('rol', { enum: ['clienta', 'agente', 'estilista'] }).notNull(),
     contenido: text('contenido').notNull(),
+    // wamid del canal WhatsApp: dedupe de reintentos de webhook (null en mensajes internos)
+    waId: text('wa_id').unique(),
     tokensEntrada: integer('tokens_entrada'),
     tokensSalida: integer('tokens_salida'),
     timestamp: timestampMs('timestamp')
