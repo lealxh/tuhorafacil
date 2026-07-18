@@ -93,6 +93,18 @@ describe('mapearEventoKapso', () => {
 		expect(r).toEqual({ accion: 'ignorar', motivo: 'envio_propio' });
 	});
 
+	it('phone_number.created → numero_conectado con customer id', () => {
+		const r = mapearEventoKapso('whatsapp.phone_number.created', {
+			phone_number_id: 'PN_NUEVO',
+			customer: { id: 'cust-uuid-1' }
+		});
+		expect(r).toEqual({ accion: 'numero_conectado', phoneNumberId: 'PN_NUEVO', customerId: 'cust-uuid-1' });
+	});
+
+	it('phone_number.created sin customer se ignora', () => {
+		expect(mapearEventoKapso('whatsapp.phone_number.created', { phone_number_id: 'PN' }).accion).toBe('ignorar');
+	});
+
 	it('eventos sin phone_number_id o de otros tipos se ignoran', () => {
 		expect(mapearEventoKapso('whatsapp.message.received', {}).accion).toBe('ignorar');
 		expect(mapearEventoKapso('whatsapp.message.read', base).accion).toBe('ignorar');

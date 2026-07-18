@@ -58,8 +58,13 @@
 			<p class="text-ink-soft text-xs">
 				{waConectado
 					? 'Tu agente está operando con tu número.'
-					: 'La conexión con tu número se activa cuando Meta apruebe la plataforma.'}
+					: 'Conecta tu número para que tu agente responda por ti.'}
 			</p>
+			{#if !waConectado}
+				<a href="/app/onboarding?paso=4" class="text-blush-deep mt-1 inline-block text-xs font-bold">
+					Conectar ahora ›
+				</a>
+			{/if}
 		</div>
 		<span class="h-2.5 w-2.5 flex-none rounded-full {waConectado ? 'bg-success' : 'bg-line'}"></span>
 	</div>

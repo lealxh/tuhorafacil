@@ -38,6 +38,8 @@ export const estilistas = sqliteTable('estilistas', {
   fotoUrl: text('foto_url'),
   waPhoneNumberId: text('wa_phone_number_id'),
   waWabaId: text('wa_waba_id'),
+  // Customer de Kapso asociado (mapea el evento phone_number.created → estilista)
+  kapsoCustomerId: text('kapso_customer_id').unique(),
   waAccessTokenEnc: text('wa_access_token_enc'),
   waEstado: text('wa_estado', { enum: ['desconectado', 'conectando', 'activo', 'error'] })
     .notNull()

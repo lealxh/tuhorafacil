@@ -1,9 +1,11 @@
+import { createDb, eq, estilistas } from '@tuhorafacil/db';
 import {
   normalizarTelefono,
   procesarEco,
   procesarMensajeEntrante,
   type EntradaMensaje
 } from '../agente/orquestador';
+import { activarNumero } from './conexion';
 import type { KapsoEvento, KapsoWebhookBody } from './tipos';
 
 /** Verifica X-Webhook-Signature: HMAC SHA256 (hex, con prefijo sha256= opcional) del body crudo. */
@@ -40,6 +42,7 @@ export function eventosDe(body: KapsoWebhookBody): KapsoEvento[] {
 export type AccionKapso =
   | { accion: 'entrante'; entrada: EntradaMensaje }
   | { accion: 'eco'; phoneNumberId: string; telefonoClienta: string }
+  | { accion: 'numero_conectado'; phoneNumberId: string; customerId: string }
   | { accion: 'ignorar'; motivo: string };
 
 /** Traduce un evento Kapso a la entrada normalizada del núcleo del agente. Puro, testeable. */
@@ -47,6 +50,11 @@ export function mapearEventoKapso(tipo: string | undefined, evento: KapsoEvento)
   const phoneNumberId = evento.phone_number_id;
   if (!phoneNumberId) return { accion: 'ignorar', motivo: 'sin_phone_number_id' };
   const mensaje = evento.message;
+
+  if (tipo === 'whatsapp.phone_number.created') {
+    if (!evento.customer?.id) return { accion: 'ignorar', motivo: 'numero_sin_customer' };
+    return { accion: 'numero_conectado', phoneNumberId, customerId: evento.customer.id };
+  }
 
   if (tipo === 'whatsapp.message.received') {
     const telefono = mensaje?.from ?? mensaje?.kapso?.phone_number ?? evento.conversation?.phone_number;
@@ -83,6 +91,13 @@ export async function procesarWebhookKapso(env: Env, body: KapsoWebhookBody): Pr
         await procesarMensajeEntrante(env, mapeado.entrada);
       } else if (mapeado.accion === 'eco') {
         await procesarEco(env, { phoneNumberId: mapeado.phoneNumberId, telefonoClienta: mapeado.telefonoClienta });
+      } else if (mapeado.accion === 'numero_conectado') {
+        const db = createDb(env.DB);
+        const estilista = await db.query.estilistas.findFirst({
+          where: eq(estilistas.kapsoCustomerId, mapeado.customerId)
+        });
+        if (estilista) await activarNumero(env, db, estilista.id, mapeado.phoneNumberId);
+        else console.log(JSON.stringify({ event: 'kapso_numero_sin_estilista', customerId: mapeado.customerId }));
       } else {
         console.log(JSON.stringify({ event: 'kapso_ignorado', motivo: mapeado.motivo }));
       }

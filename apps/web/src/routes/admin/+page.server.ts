@@ -43,6 +43,23 @@ export const actions: Actions = {
 		await db.update(estilistas).set({ tierId }).where(eq(estilistas.id, estilistaId));
 	},
 
+	// Fallback manual de soporte: asocia (o desconecta) el phone_number_id de Kapso.
+	// No registra el webhook del número en Kapso — para eso está el flujo self-service.
+	conectarWa: async (event) => {
+		const db = getDb(event);
+		const datos = await event.request.formData();
+		const estilistaId = String(datos.get('estilistaId') ?? '');
+		const phoneNumberId = String(datos.get('phoneNumberId') ?? '').trim();
+		await db
+			.update(estilistas)
+			.set(
+				phoneNumberId
+					? { waPhoneNumberId: phoneNumberId, waEstado: 'activo' }
+					: { waPhoneNumberId: null, waEstado: 'desconectado' }
+			)
+			.where(eq(estilistas.id, estilistaId));
+	},
+
 	pausar: async (event) => {
 		const db = getDb(event);
 		const estilistaId = String((await event.request.formData()).get('estilistaId') ?? '');

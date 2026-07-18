@@ -45,7 +45,25 @@
 								{cuenta.estado}
 							</span>
 						</td>
-						<td class="text-ink-soft px-3 text-xs">{cuenta.waEstado}</td>
+						<td class="px-3">
+							{#if cuenta.waEstado === 'activo'}
+								<form method="POST" action="?/conectarWa" use:enhance class="flex items-center gap-1.5">
+									<input type="hidden" name="estilistaId" value={cuenta.id} />
+									<span class="text-success text-xs font-semibold">activo</span>
+									<button type="submit" class="text-ink-faint text-xs underline">desconectar</button>
+								</form>
+							{:else}
+								<form method="POST" action="?/conectarWa" use:enhance class="flex items-center gap-1">
+									<input type="hidden" name="estilistaId" value={cuenta.id} />
+									<input
+										name="phoneNumberId"
+										placeholder="phone_number_id"
+										class="rounded-field border-line bg-surface w-32 border px-2 py-1 text-xs"
+									/>
+									<button type="submit" class="text-blush-deep text-xs font-bold">ok</button>
+								</form>
+							{/if}
+						</td>
 						<td class="px-3">
 							<form
 								method="POST"

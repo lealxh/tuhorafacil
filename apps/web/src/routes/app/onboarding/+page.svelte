@@ -170,16 +170,39 @@
 		<h1 class="text-2xl font-bold tracking-tight">Conecta tu WhatsApp</h1>
 		<p class="text-ink-soft -mt-3 text-sm">Tu agente responderá desde tu propio número.</p>
 
-		<div class="rounded-card flex flex-col items-center gap-3 bg-white p-8 text-center shadow-sm">
-			<div class="bg-blush flex h-14 w-14 items-center justify-center rounded-full text-2xl">
-				💬
+		{#if data.waConectado}
+			<div class="rounded-card flex flex-col items-center gap-3 bg-white p-8 text-center shadow-sm">
+				<div class="bg-success/15 flex h-14 w-14 items-center justify-center rounded-full text-2xl">
+					✅
+				</div>
+				<p class="text-sm font-semibold">¡WhatsApp conectado!</p>
+				<p class="text-ink-soft text-sm">
+					Tu agente ya puede responder y agendar por ti. Tu teléfono sigue funcionando igual que
+					siempre.
+				</p>
 			</div>
-			<p class="text-sm font-semibold">Disponible muy pronto</p>
-			<p class="text-ink-soft text-sm">
-				La conexión con WhatsApp se activa cuando Meta apruebe la plataforma. Tu agenda ya queda
-				lista.
-			</p>
-		</div>
+		{:else}
+			<div class="rounded-card flex flex-col gap-4 bg-white p-6 shadow-sm">
+				<div class="flex items-center gap-3">
+					<div class="bg-blush flex h-12 w-12 flex-none items-center justify-center rounded-full text-xl">
+						💬
+					</div>
+					<p class="text-sm font-semibold">Conecta tu número en 2 minutos</p>
+				</div>
+				<ul class="text-ink-soft flex flex-col gap-1.5 text-sm">
+					<li>1. Necesitas tu número activo en la app <strong>WhatsApp Business</strong> (gratis).</li>
+					<li>2. Inicia sesión con tu Facebook y escanea un código QR.</li>
+					<li>3. Listo: tu teléfono sigue funcionando igual, y tu agente responde cuando tú no.</li>
+				</ul>
+				{#if data.waError}<p class="form-error">La conexión no se completó. Puedes intentarlo de nuevo.</p>{/if}
+				{#if form?.error}<p class="form-error">{form.error}</p>{/if}
+				<!-- Sin use:enhance: el 303 va a un dominio externo (flujo hosted de conexión) -->
+				<form method="POST" action="?/conectarWa">
+					<input type="hidden" name="plan" value={data.plan ?? ''} />
+					<button type="submit" class="{btnPrimario} w-full">Conectar mi WhatsApp</button>
+				</form>
+			</div>
+		{/if}
 
 		<div class="mt-auto flex gap-3">
 			<a
@@ -189,9 +212,15 @@
 			>
 			<a
 				href={data.plan ? `/app/plan/checkout?plan=${data.plan}` : '/app'}
-				class="{btnPrimario} flex-1 text-center"
+				class="{data.waConectado ? btnPrimario : 'rounded-field border-line text-ink-soft border bg-white px-5 py-3 text-sm font-semibold'} flex-1 text-center"
 			>
-				{data.plan ? 'Continuar al pago' : 'Ir a mi agenda'}
+				{data.waConectado
+					? data.plan
+						? 'Continuar al pago'
+						: 'Ir a mi agenda'
+					: data.plan
+						? 'Conectar después e ir al pago'
+						: 'Conectar después'}
 			</a>
 		</div>
 	{/if}

@@ -12,6 +12,10 @@
       "migrations_dir": "../../packages/db/drizzle"
     }
   ],
+  "vars": {
+    // URL pública de nuestro webhook Kapso: se registra en cada número que se conecta
+    "WEBHOOK_KAPSO_URL": "https://tuhorafacil-api.tuhorafacil.workers.dev/webhook/kapso"
+  },
   "triggers": {
     // Cada 5 min: recordatorios (idempotente y barato) y de paso keep-warm
     // del Worker y su conexión D1 (el primer request en frío llegó a tardar ~20s)

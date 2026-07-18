@@ -1,3 +1,4 @@
+import { llamarApi } from '$lib/server/api';
 import { getDb, getEstilista } from '$lib/server/db';
 import { guardarHorariosDesdeForm } from '$lib/server/horarios';
 import { crearServicio, eliminarServicio } from '$lib/server/servicios';
@@ -27,12 +28,22 @@ export const load: PageServerLoad = async (event) => {
 	const paso = estilista ? Math.min(Math.max(pasoPedido, 1), 4) : 1;
 	const plan = planPedido(event.url);
 
-	if (!estilista) return { paso: 1, plan, servicios: [], horarios: [] };
+	if (!estilista) return { paso: 1, plan, servicios: [], horarios: [], waConectado: false, waError: false };
+
+	// Al volver del setup link de Kapso (?wa=ok) se confirma contra su API:
+	// respaldo del webhook phone_number.created por si el evento se pierde
+	let waConectado = estilista.waEstado === 'activo';
+	if (!waConectado && paso === 4 && event.url.searchParams.get('wa') === 'ok') {
+		const res = await llamarApi(event.platform!.env, '/kapso/confirmar', { estilistaId: estilista.id });
+		if (res.ok) waConectado = ((await res.json()) as { conectado: boolean }).conectado;
+	}
 
 	const db = getDb(event);
 	return {
 		paso,
 		plan,
+		waConectado,
+		waError: event.url.searchParams.get('wa') === 'error',
 		servicios: await db.query.servicios.findMany({
 			where: eq(servicios.estilistaId, estilista.id),
 			orderBy: asc(servicios.nombre)
@@ -101,6 +112,23 @@ export const actions: Actions = {
 		const est = await estilistaRequerida(event);
 		const id = String((await event.request.formData()).get('id') ?? '');
 		await eliminarServicio(getDb(event), est.id, id);
+	},
+
+	// Genera el setup link de Kapso y manda a la estilista al flujo hosted de conexión
+	conectarWa: async (event) => {
+		const est = await estilistaRequerida(event);
+		const datos = await event.request.formData();
+		const plan = String(datos.get('plan') ?? '');
+		const sufijoPlan = plan === 'recepcionista' || plan === 'pro' ? `&plan=${plan}` : '';
+		const origen = event.url.origin;
+		const res = await llamarApi(event.platform!.env, '/kapso/setup-link', {
+			estilistaId: est.id,
+			successUrl: `${origen}/app/onboarding?paso=4&wa=ok${sufijoPlan}`,
+			failureUrl: `${origen}/app/onboarding?paso=4&wa=error${sufijoPlan}`
+		});
+		if (!res.ok) return fail(502, { error: 'No pudimos generar el link de conexión. Intenta de nuevo.' });
+		const { url } = (await res.json()) as { url: string };
+		redirect(303, url);
 	},
 
 	guardarHorarios: async (event) => {

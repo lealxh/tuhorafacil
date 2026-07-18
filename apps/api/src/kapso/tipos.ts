@@ -28,4 +28,6 @@ export interface KapsoEvento {
     phone_number?: string;
     contact_name?: string;
   };
+  /** Presente en whatsapp.phone_number.created (project webhook) */
+  customer?: { id?: string };
 }
