@@ -143,7 +143,12 @@ export async function procesarMensajeEntrante(env: Env, entrada: EntradaMensaje)
   if (conversacion.agentePausadoHasta && conversacion.agentePausadoHasta.getTime() > Date.now()) return;
 
   const responder = async (texto: string, tokens?: { entrada: number; salida: number }) => {
-    await enviarTexto(env.WA_ACCESS_TOKEN || undefined, entrada.phoneNumberId, telefono, texto);
+    await enviarTexto(
+      { kapsoApiKey: env.KAPSO_API_KEY || undefined, waAccessToken: env.WA_ACCESS_TOKEN || undefined },
+      entrada.phoneNumberId,
+      telefono,
+      texto
+    );
     await db.insert(mensajes).values({
       conversacionId: conversacion.id,
       rol: 'agente',
