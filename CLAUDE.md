@@ -68,7 +68,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 ## Project state
 
-pnpm monorepo targeting a live demo in October 2026. Fases 0–1 complete; Fase 2 complete except Embedded Signup (blocked on Meta Tech Provider approval); Fase 3 partially done (public booking page ✅, reminders/admin/hardening pending). **Read `03-plan-de-trabajo.md` § 0 "ESTADO DE AVANCE" first** — it has the full done/pending breakdown, operational details (accounts, secrets, test credentials), and known pitfalls. Source-of-truth docs (in Spanish):
+pnpm monorepo targeting a live demo in October 2026. Fases 0–1 complete; Fase 2 complete except the real WhatsApp connection (2026-07-18 decision: integrate via Kapso as BSP instead of the own Meta Tech Provider, which unblocks it); Fase 3 partially done (public booking page ✅, reminders/admin/hardening pending). **Read `03-plan-de-trabajo.md` § 0 "ESTADO DE AVANCE" first** — it has the full done/pending breakdown, operational details (accounts, secrets, test credentials), and known pitfalls. Source-of-truth docs (in Spanish):
 
 - `01-requerimientos-funcionales.md` — functional requirements, tiers, MVP scope
 - `02-especificaciones-tecnicas2.md` — architecture, data model, build order
@@ -118,7 +118,7 @@ Domain language is Spanish (estilista, clienta, cita, horario, bloqueo); the dat
 
 - **The own database is the single source of truth** for availability and appointments. The agent, dashboard, and public booking page all read/write through the same scheduling engine. Google Calendar is roadmap-only export.
 - **The scheduling engine is deterministic pure logic.** The LLM never computes availability — it only calls tools: `consultar_disponibilidad`, `crear_cita`, `reagendar_cita`, `cancelar_cita`, `escalar_a_estilista`. Backend validation prevents double-booking regardless of what the LLM does. D1 has no interactive transactions — `crear_cita` must prevent double-booking via a conflict check and insert in a single `batch()`/statement (D1 is single-writer, so a batch is atomic).
-- **WhatsApp model: Tech Provider + Coexistence + Embedded Signup.** The platform registers with Meta as Tech Provider; each stylist connects her own existing number via Embedded Signup from the dashboard. Coexistence means her phone keeps working — the webhook must detect her outgoing messages and put the conversation in cooldown to avoid duplicate replies.
+- **WhatsApp model: Kapso (BSP) + Coexistence — decided 2026-07-18**, replacing the original own-Tech-Provider plan (postponed as a future margin optimization; see `03-plan-de-trabajo.md` § 0 pendiente #1 for phases and pricing). Each stylist connects her own existing number via Kapso's hosted Embedded Signup ("connection links"); Kapso webhooks use their own payload format (not Meta Cloud API) and need an adapter in `apps/api`. Coexistence unchanged: her phone keeps working — Kapso's `whatsapp.message.sent` event with `origin='business_app'` is the outgoing-message echo that must trigger the conversation cooldown to avoid duplicate replies.
 - **Webhook pattern:** Meta requires a response in <5s. Return `200 OK` immediately and process the agent via `c.executionCtx.waitUntil()`.
 - **Metering from day one** is a business requirement: record LLM tokens and Meta conversation costs per account (`consumo_mensual`). Tier limits pause the agent with a friendly message when exhausted.
 - **Conversation history is persisted per client** (`conversaciones`/`mensajes`) and replayed to the LLM on each call; trim to the last N messages and cache the system prompt to control cost.
@@ -134,6 +134,6 @@ Out of MVP scope (do not build): payments, SII invoicing, campaign UI, Google Ca
 
 ## Non-code constraints worth knowing
 
-- Meta processes (Tech Provider verification, Embedded Signup review, template approval) have multi-week lead times independent of development.
+- Meta's own Tech Provider process (multi-week lead times) is bypassed by the Kapso decision; template approval still goes through Meta (managed via Kapso) and keeps its lead time.
 - Cloudflare Workers paid plan is assumed (30s CPU limit needed for LLM calls; the free 10ms limit is insufficient).
 - Conversations contain end-client personal data — a retention policy must exist before launch.

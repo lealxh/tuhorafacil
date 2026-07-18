@@ -1,7 +1,7 @@
 # Plan de Trabajo — MVP TuHoraFácil
 
 **Versión:** 1.1
-**Fecha:** 5 de julio 2026 · **Última actualización de estado:** 6 de julio 2026
+**Fecha:** 5 de julio 2026 · **Última actualización de estado:** 18 de julio 2026
 **Horizonte:** ~14 semanas → demo en vivo en octubre 2026
 **Insumos:** `01-requerimientos-funcionales.md` (v0.2), `02-especificaciones-tecnicas2.md` (v0.3), diseño UI aprobado (`Tuhorafacil.dc.html` en claude.ai/design)
 
@@ -9,7 +9,7 @@
 
 ## 0. ESTADO DE AVANCE (leer primero — contexto para retomar el trabajo)
 
-> Actualizado el 6-jul-2026. El proyecto va **muy adelantado respecto al cronograma**: en la semana 1 se completó lo planificado hasta ~semana 11. Fases 0 y 1 completas; Fase 2 completa salvo Embedded Signup (bloqueado por Meta); de Fase 3 falta recordatorios, admin y hardening.
+> Actualizado el 18-jul-2026. El proyecto va **muy adelantado respecto al cronograma**. Fases 0 y 1 completas; Fase 2 completa salvo la conexión WhatsApp real — **decidido el 18-jul-2026: se integrará vía Kapso (kapso.com) como Tech Provider/BSP**, eliminando el bloqueo del trámite propio de Meta. De Fase 3 faltan el envío real de recordatorios y el hardening.
 
 ### ✅ Terminado y desplegado (verificado end-to-end)
 
@@ -17,7 +17,7 @@
 |---|---|---|
 | **Fase 0 completa** | Monorepo pnpm, D1 + Drizzle (migraciones 0000–0003), CI GitHub Actions, ambos Workers desplegados | `tuhorafacil-web` y `tuhorafacil-api` en `*.tuhorafacil.workers.dev` |
 | **Motor de agendamiento** | Slots, validación, solapamientos, anticipación (cruza medianoche), bloqueos multi-día TZ Chile. **20 tests en verde** | `packages/core` |
-| **Lógica de dominio compartida** | `crearCita` con **insert atómico anti doble-booking** (`INSERT…WHERE NOT ECron cada 5 min (también keep-warm de api+D1 contra cold starts) en la api genera recordatoriosISTS`, D1 single-writer), bloqueos, slots, fechas. La usan web Y agente — nunca duplicar | `packages/agenda` |
+| **Lógica de dominio compartida** | `crearCita` con **insert atómico anti doble-booking** (`INSERT…WHERE NOT EXISTS`, D1 single-writer), bloqueos, slots, fechas. La usan web Y agente — nunca duplicar | `packages/agenda` |
 | **Auth** | better-auth (email+password), tablas en `packages/db/src/auth-schema.ts`, `estilistas.user_id` FK. Login/registro/cambio de contraseña/logout probados | `apps/web/src/lib/server/auth.ts`, `hooks.server.ts` |
 | **Onboarding** | Wizard 4 pasos (negocio→servicios→horarios→WhatsApp "muy pronto"), slug autogenerado, tier Agenda default | `/app/onboarding` |
 | **Dashboard 5 tabs + Cuenta** | Hoy (card agente + escalados), Calendario (día/semana/mes + sheet Nueva cita + bloqueos), Mi agente (toggle/personalidad/instrucciones/escalados con "Que siga el agente"/"Responder yo"), Mi página (mantenedor con 3 tabs: página+bio, servicios con toggles, horarios), Consumo/Plan (barras de uso, comparativa), Cuenta (perfil/contraseña/logout, llega por el avatar) | `apps/web/src/routes/app/*` |
@@ -29,7 +29,7 @@
 | **Cambio de plan + pago mockeado** | `/app/plan` con tarjetas clicables → `/app/plan/checkout` (pantalla estilo Webpay que siempre aprueba) → registra `suscripciones` y cambia `estilistas.tier_id` (desbloquea el agente al instante). La pasarela real (Webpay/Flow/Mercado Pago) se enchufa en la acción `pagar` | tabla `suscripciones` (migración 0004); `apps/web/.../plan` + `plan/checkout` |
 | **Panel admin (F8)** | Route group `/admin` con guard por `user.role='admin'` (columna nueva; se re-consulta en `esAdmin`). Tabla de cuentas (tier, estado, waEstado, mensajes y **costo USD** del mes), cambiar tier, pausar/reactivar. Costo: `registrarConsumo` ahora calcula `costo_estimado_usd` con precios Haiku 4.5. **Sin** tope duro con bloqueo (queda en hardening). Verificado en vivo: pausar → el agente se frena en el chat de prueba | migración 0005 (`user.role`); `apps/web/src/routes/admin/*`; `orquestador.ts` |
 | **Editar cita (F4)** | Primitivo de dominio `editarCita` en `packages/agenda` (reusa `validarCita`/`finDeCita` + guard atómico anti-solapamiento, con `excluirCitaId` para no chocar consigo misma). Edita servicio/fecha/hora **in situ** (misma fila, preserva `origen`). Hoja de edición en el calendario. 21 tests en verde (nuevo test de auto-solapamiento). Verificado en vivo | `packages/agenda/src/citas.ts`; `apps/web/.../calendario` |
-| **Recordatorios (F7) — infra + vista de prueba** | Cron cada 5 min (también keep-warm de api+D1 contra cold starts) en la api genera recordatorios para las citas de HOY de cuentas Pro (tabla `recordatorios`, idempotente: unique por cita). Reglas **configurables por admin** en `/admin/recordatorios` (tabla `configuracion`, defaults en `packages/agenda/src/recordatorios.ts`): batch matinal a la `hora_envio` (default 08:00) para las citas que ya existían, y rezagadas (agendadas después) con `horas_minimas` de aviso (default 2; si falta menos, no se recuerda). Lógica pura `correspondeRecordatorio` con tests. Sin envío real todavía: quedan `estado='simulado'` y se ven en `/app/recordatorios` (gate por `tiene_recordatorios`) renderizados como los verá la clienta en WhatsApp, con botones Confirmar/Reagendar que simulan su respuesta (`respuesta`/`respondido_at`). `POST /mock/recordatorios` (Cron cada 5 min (también keep-warm de api+D1 contra cold starts) en la api genera recordatorios-Mock-Secret) los genera al instante para probar. Al aprobar Meta: enchufar plantilla con quick-replies y capturar la respuesta real por webhook | migraciones 0007/0008; `packages/agenda/src/recordatorios.ts`; `apps/api/src/recordatorios/generar.ts` + cron en `index.ts`; `apps/web/.../recordatorios` + `/admin/recordatorios` |
+| **Recordatorios (F7) — infra + vista de prueba** | Cron cada 5 min (también keep-warm de api+D1 contra cold starts) en la api genera recordatorios para las citas de HOY de cuentas Pro (tabla `recordatorios`, idempotente: unique por cita). Reglas **configurables por admin** en `/admin/recordatorios` (tabla `configuracion`, defaults en `packages/agenda/src/recordatorios.ts`): batch matinal a la `hora_envio` (default 08:00) para las citas que ya existían, y rezagadas (agendadas después) con `horas_minimas` de aviso (default 2; si falta menos, no se recuerda). Lógica pura `correspondeRecordatorio` con tests. Sin envío real todavía: quedan `estado='simulado'` y se ven en `/app/recordatorios` (gate por `tiene_recordatorios`) renderizados como los verá la clienta en WhatsApp, con botones Confirmar/Reagendar que simulan su respuesta (`respuesta`/`respondido_at`). `POST /mock/recordatorios` (X-Mock-Secret) los genera al instante para probar. Al aprobar Meta: enchufar plantilla con quick-replies y capturar la respuesta real por webhook | migraciones 0007/0008; `packages/agenda/src/recordatorios.ts`; `apps/api/src/recordatorios/generar.ts` + cron en `index.ts`; `apps/web/.../recordatorios` + `/admin/recordatorios` |
 | **Foto de perfil (F5)** | Bucket R2 privado `tuhorafacil-fotos` (binding `FOTOS`) + ruta `GET /fotos/[...key]` que la sirve. Acción `foto` en «Mi página» (multipart, valida tipo/≤3MB, borra la anterior, `put` con ArrayBuffer). Aparece en el mantenedor y en `/@slug`. Verificado en vivo. Prod: crear el bucket con `wrangler r2 bucket create tuhorafacil-fotos` | migración 0005 (`estilistas.foto_url`); `apps/web/.../pagina`, `routes/fotos/[...key]` |
 
 ### ⚠️ Detalles operativos que el próximo modelo debe saber
@@ -44,15 +44,15 @@
 
 | # | Qué | Notas |
 |---|---|---|
-| 1 | **Recordatorios (F7): envío real** | La infra y la vista de prueba ya están (ver Hecho). Falta: plantilla WA con quick-replies aprobada por Meta, envío desde el cron (patrón degradante de `enviarTexto`), capturar la respuesta real por webhook (hoy se simula en la vista) y `consumo_mensual.conversaciones_meta` |
-| 2 | **Embedded Signup (F10)** | **BLOQUEADO por trámite Meta** (Tech Provider — responsabilidad de José, iniciado ~jul 2026). Al desbloquear: popup JS SDK en onboarding paso 4 + callback que canjea código OAuth → guardar `wa_waba_id`, `wa_phone_number_id`, token **cifrado** (`wa_access_token_enc`, definir cifrado con `WA_APP_SECRET`), suscribir webhook, `wa_estado='activo'`. Validar firma `Cron cada 5 min (también keep-warm de api+D1 contra cold starts) en la api genera recordatorios-Hub-Signature-256` en el webhook (TODO marcado en `routes/webhook.ts`) |
+| 1 | **Conexión WhatsApp vía Kapso (F10, reemplaza el Embedded Signup propio)** | **Decidido 18-jul-2026**: usar Kapso (kapso.com) como Tech Provider/BSP en vez del trámite propio de Meta (pospuesto como optimización de margen futura). Fases: (a) spike en plan Free — José crea la cuenta — recibir/contestar por su sandbox; (b) adaptador de webhook en `apps/api` (formato propio de Kapso → flujo actual del agente: `whatsapp.message.received` → mensaje entrante; `whatsapp.message.sent` con `origin='business_app'` → cooldown Coexistence) + validar firma según sus docs de webhooks/security; (c) `enviarTexto` vía API Kapso (mismo patrón degradante); (d) conectar 1 número real con coexistence (QR desde la WhatsApp **Business** App) y validar e2e; (e) onboarding paso 4 con conexión asistida (Pro) y connection links self-service al pasar a Platform. Queda obsoleto del plan original: OAuth propio, `wa_access_token_enc`/`WA_APP_SECRET`, suscripción manual del webhook de Meta. Costos: Free 1 número/2k msgs (dev + demo) → Pro $25/mes, 3 números (+$10 c/u) → Platform $299/mes, 50 números (+$5 c/u) y links self-service, rentable desde ~30 números |
+| 2 | **Recordatorios (F7): envío real** | La infra y la vista de prueba ya están (ver Hecho). Con Kapso: plantilla con quick-replies (la aprobación de plantillas sigue siendo de Meta, gestionada vía Kapso), envío desde el cron (patrón degradante de `enviarTexto`), capturar la respuesta real por webhook (hoy se simula en la vista) y `consumo_mensual.conversaciones_meta`. Ojo: las conversaciones de plantilla las factura Meta aparte, directo al WABA |
 | 3 | **Recuperación de contraseña** | better-auth lo trae, pero requiere servicio de email (ej. Cloudflare Email o Resend) |
 | 4 | **Hardening pre-demo** | Rate limiting del webhook, **tope duro de gasto con bloqueo** (hoy el costo se calcula y muestra en el panel, pero sin gate que pause; falta el bloqueo), política de retención de conversaciones (requisito legal), revisar índices D1 |
-| 5 | **Pruebas del dueño** | José está probando la app y traerá lista de mejoras UCron cada 5 min (también keep-warm de api+D1 contra cold starts) en la api genera recordatorios |
+| 5 | **Pruebas del dueño** | José está probando la app y traerá lista de mejoras UX |
 
 ### Riesgos vigentes
 
-- **Meta es el camino crítico** (riesgo #1): sin Tech Provider aprobado no hay demo con número real. Todo lo demás puede demostrarse con webhook simulado.
+- **El trámite de Meta dejó de ser el camino crítico** (decisión Kapso, 18-jul-2026). El riesgo #1 pasa a ser la dependencia de un BSP joven: migrar de BSP implica re-conectar cada número. Mitigación: el dominio no cambia (solo la capa WhatsApp de `apps/api`) y el Tech Provider propio puede tramitarse en paralelo cuando el negocio esté validado.
 - Los mensajes del cambio Neon→D1 (5-jul), y decisión better-auth en vez de Lucia (deprecada), ya están reflejados en CLAUDE.md.
 
 ---
@@ -148,7 +148,7 @@ El mock aprobado define decisiones que impactan directamente el desarrollo:
 | Semana | Tarea |
 |---|---|
 | 11 | **Página pública** (F6): ruta `/@slug` SSR sin login, flujo de reserva (servicio → slots → datos → confirmación), botón WhatsApp |
-| 12 | **Recordatorios** (F7, tier Pro): Cron Triggers + envío de plantillas aprobadas (confirmación, recordatorio Cron cada 5 min (también keep-warm de api+D1 contra cold starts) en la api genera recordatorios horas antes, notificación a la estilista) |
+| 12 | **Recordatorios** (F7, tier Pro): Cron Triggers + envío de plantillas aprobadas (confirmación, recordatorio X horas antes, notificación a la estilista) |
 | 12 | Pantalla **Consumo / Plan**: barras de uso, comparativa de planes |
 | 13 | **Panel admin** (F8): login con rol admin, tabla de cuentas (tier, estado WhatsApp, consumo, costo estimado), cambiar tier, pausar cuenta, **tope duro de gasto por cuenta** (riesgo #6) |
 | 13–14 | Hardening: degradación con gracia si el LLM falla ("te respondo en un momento"), manejo de errores del webhook, política de retención de conversaciones |
