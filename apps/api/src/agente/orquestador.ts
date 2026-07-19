@@ -21,7 +21,7 @@ import {
   type Db
 } from '@tuhorafacil/db';
 import { construirSystemPrompt } from '@tuhorafacil/agenda';
-import { enviarTexto } from '../whatsapp/enviar';
+import { enviarTexto, indicarEscribiendo } from '../whatsapp/enviar';
 import type { WebhookPayload } from '../whatsapp/tipos';
 import { ejecutarTool, TOOLS, type ContextoTools } from './tools';
 
@@ -173,6 +173,15 @@ export async function procesarMensajeEntrante(env: Env, entrada: EntradaMensaje)
   if (entrada.tipo !== 'text') {
     await responder('Por ahora solo puedo leer mensajes de texto 🙏 ¿Me lo puedes escribir?');
     return;
+  }
+
+  // "escribiendo…" en el WhatsApp de la clienta mientras el agente piensa (y ✓✓ de leído)
+  if (entrada.waId) {
+    await indicarEscribiendo(
+      { kapsoApiKey: env.KAPSO_API_KEY || undefined, waAccessToken: env.WA_ACCESS_TOKEN || undefined },
+      entrada.phoneNumberId,
+      entrada.waId
+    );
   }
 
   const ctxTools: ContextoTools = {
