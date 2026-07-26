@@ -1,4 +1,4 @@
-import { createDb, eq, estilistas, type Db } from '@tuhorafacil/db';
+import { configAgente, createDb, eq, estilistas, type Db } from '@tuhorafacil/db';
 
 const KAPSO_PLATFORM = 'https://api.kapso.ai/platform/v1';
 
@@ -80,6 +80,11 @@ export async function activarNumero(env: Env, db: Db, estilistaId: string, phone
     .update(estilistas)
     .set({ waPhoneNumberId: phoneNumberId, waEstado: 'activo' })
     .where(eq(estilistas.id, estilistaId));
+  // Conectar el número = querer al agente trabajando: se activa (destrabando una pausa previa)
+  await db
+    .insert(configAgente)
+    .values({ estilistaId, activo: true })
+    .onConflictDoUpdate({ target: configAgente.estilistaId, set: { activo: true } });
   console.log(JSON.stringify({ event: 'kapso_numero_activado', estilistaId, phoneNumberId }));
 
   await registrarWebhookDeNumero(env, phoneNumberId);

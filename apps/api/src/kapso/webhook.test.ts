@@ -36,7 +36,11 @@ describe('eventosDe', () => {
 		const evento = { phone_number_id: '123' };
 		expect(eventosDe({ data: evento })).toEqual([evento]);
 		expect(eventosDe({ batch: true, data: [evento, evento] })).toHaveLength(2);
-		expect(eventosDe({})).toEqual([]);
+	});
+
+	it('sin `data` usa el body como evento (webhooks de proyecto)', () => {
+		const body = { type: 'whatsapp.phone_number.created', phone_number_id: 'PN', customer: { id: 'c1' } };
+		expect(eventosDe(body)).toEqual([body]);
 	});
 });
 

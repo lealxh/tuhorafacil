@@ -35,8 +35,10 @@ export async function verificarFirmaKapso(
 }
 
 export function eventosDe(body: KapsoWebhookBody): KapsoEvento[] {
-  if (!body.data) return [];
-  return Array.isArray(body.data) ? body.data : [body.data];
+  if (body.data) return Array.isArray(body.data) ? body.data : [body.data];
+  // Los webhooks de proyecto (ej. phone_number.created) traen los campos al nivel
+  // raíz, sin el envoltorio `data` que usan los eventos de mensajes.
+  return [body as KapsoEvento];
 }
 
 export type AccionKapso =
@@ -99,7 +101,10 @@ export async function procesarWebhookKapso(env: Env, body: KapsoWebhookBody): Pr
         if (estilista) await activarNumero(env, db, estilista.id, mapeado.phoneNumberId);
         else console.log(JSON.stringify({ event: 'kapso_numero_sin_estilista', customerId: mapeado.customerId }));
       } else {
-        console.log(JSON.stringify({ event: 'kapso_ignorado', motivo: mapeado.motivo }));
+        // Registra tipo y claves del evento para diagnosticar payloads no manejados
+        console.log(
+          JSON.stringify({ event: 'kapso_ignorado', motivo: mapeado.motivo, tipo: body.type, claves: Object.keys(evento) })
+        );
       }
     } catch (e) {
       console.error(JSON.stringify({ event: 'kapso_error', error: String(e) }));

@@ -1,6 +1,8 @@
 /** Subconjunto del payload de webhooks de Kapso que usamos (formato propio, no Meta). */
 
-export interface KapsoWebhookBody {
+// Los webhooks de proyecto ponen los campos del evento en la raíz (sin `data`),
+// así que el body puede ser a la vez un evento.
+export interface KapsoWebhookBody extends KapsoEvento {
   type?: string;
   /** true → data es un array de eventos agrupados */
   batch?: boolean;
