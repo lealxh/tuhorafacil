@@ -105,6 +105,22 @@
 					</form>
 				</div>
 
+				{#if !waConectado}
+					<a
+						href="/app/onboarding?paso=4"
+						class="rounded-card from-primary to-primary-light flex items-center gap-3 bg-gradient-to-br px-4 py-3.5 text-white shadow-sm"
+					>
+						<span class="text-xl">💬</span>
+						<span class="min-w-0 flex-1">
+							<span class="block text-sm font-bold">Conecta tu WhatsApp</span>
+							<span class="block text-xs text-white/85">
+								Tu agente empieza a responder apenas conectes tu número
+							</span>
+						</span>
+						<span class="text-white/90">›</span>
+					</a>
+				{/if}
+
 				<a
 					href="/app/probar-agente"
 					class="rounded-card border-line flex items-center gap-2 border bg-white px-4 py-3 text-sm font-semibold shadow-sm"
