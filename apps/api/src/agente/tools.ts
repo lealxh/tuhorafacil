@@ -28,7 +28,12 @@ export const TOOLS: Anthropic.Tool[] = [
         fecha: { type: 'string', description: 'YYYY-MM-DD' },
         hora: { type: 'string', description: 'HH:MM, una hora que consultar_disponibilidad haya ofrecido' },
         servicio_id: { type: 'string' },
-        nombre_clienta: { type: 'string', description: 'Nombre de la clienta tal como lo dio en la conversación' }
+        nombre_clienta: { type: 'string', description: 'Nombre de la clienta tal como lo dio en la conversación' },
+        telefono_clienta: {
+          type: 'string',
+          description:
+            'Teléfono con WhatsApp de la clienta, con código de país (ej: +56912345678). SOLO en el chat web, donde la clienta es anónima; en WhatsApp deja cadena vacía.'
+        }
       },
       required: ['fecha', 'hora', 'servicio_id', 'nombre_clienta'],
       additionalProperties: false
@@ -83,8 +88,11 @@ export interface ContextoTools {
   db: Db;
   estilistaId: string;
   clientaId: string;
+  /** WhatsApp: teléfono de la clienta. Web: placeholder 'web:<token>' (la clienta es anónima) */
   telefono: string;
   conversacionId: string;
+  /** Canal de origen para las citas que cree el agente (default 'agente' = WhatsApp) */
+  origen?: 'agente' | 'web';
   /** Se marca cuando crear_cita tiene éxito, para el metering */
   citasCreadas: { count: number };
 }
@@ -111,16 +119,27 @@ export async function ejecutarTool(ctx: ContextoTools, nombre: string, input: Re
 
     case 'crear_cita': {
       const nombre_clienta = String(input.nombre_clienta).trim();
+      // Web: la clienta es anónima → el teléfono lo aporta el agente (telefono_clienta)
+      const esWeb = ctx.telefono.startsWith('web:');
+      const telefonoDado = input.telefono_clienta ? String(input.telefono_clienta).trim().replace(/\s/g, '') : '';
+      if (esWeb && !/^\+?\d{8,15}$/.test(telefonoDado)) {
+        return JSON.stringify({
+          error: 'Pídele a la clienta su teléfono con WhatsApp (con código de país, ej +56912345678) antes de agendar.'
+        });
+      }
+      const telefono = esWeb ? (telefonoDado.startsWith('+') ? telefonoDado : `+${telefonoDado}`) : ctx.telefono;
+
       const r = await crearCita(ctx.db, ctx.estilistaId, {
         clientaNombre: nombre_clienta,
-        telefono: ctx.telefono,
+        telefono,
         servicioId: String(input.servicio_id),
         fecha: String(input.fecha),
         horaInicio: String(input.hora),
-        origen: 'agente'
+        origen: ctx.origen ?? 'agente'
       });
       if ('error' in r) return JSON.stringify(r);
-      if (nombre_clienta) {
+      // En WhatsApp la clienta del contexto es quien agenda; en web la clienta real la crea crearCita por su teléfono
+      if (nombre_clienta && !esWeb) {
         await ctx.db.update(clientasFinales).set({ nombre: nombre_clienta }).where(eq(clientasFinales.id, ctx.clientaId));
       }
       ctx.citasCreadas.count++;

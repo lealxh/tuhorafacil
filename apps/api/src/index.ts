@@ -3,6 +3,7 @@ import { generarRecordatorios } from './recordatorios/generar';
 import { health } from './routes/health';
 import { kapso } from './routes/kapso';
 import { mock } from './routes/mock';
+import { publico } from './routes/publico';
 import { webhook } from './routes/webhook';
 
 const app = new Hono<{ Bindings: Env }>();
@@ -10,6 +11,7 @@ const app = new Hono<{ Bindings: Env }>();
 app.route('/health', health);
 app.route('/webhook', webhook);
 app.route('/mock', mock);
+app.route('/publico', publico);
 app.route('/kapso', kapso);
 
 app.notFound((c) => c.json({ error: 'not_found' }, 404));

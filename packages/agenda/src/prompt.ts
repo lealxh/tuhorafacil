@@ -76,7 +76,21 @@ function renderizar(plantilla: string, valores: Record<string, string>): string 
   return plantilla.replace(/\{\{(\w+)\}\}/g, (original, clave) => valores[clave] ?? original);
 }
 
-export function construirSystemPrompt(ctx: ContextoNegocio, plantilla: string = PLANTILLA_POR_DEFECTO): string {
+// Instrucción extra para el canal web: la clienta es anónima (sin teléfono conocido).
+// Se agrega DESPUÉS de renderizar para que aplique aunque el admin edite la plantilla.
+const BLOQUE_WEB = `
+
+## Canal web (importante)
+Estás atendiendo por el chat de la página web, no por WhatsApp. Aquí la clienta es anónima: no conoces su nombre ni su teléfono.
+- ANTES de agendar, pídele su nombre y su teléfono (con WhatsApp) y confírmale el número repitiéndolo.
+- Pasa ese teléfono a crear_cita en el parámetro telefono_clienta (formato con código de país, ej: +56912345678).
+- No agendes sin un teléfono válido de la clienta.`;
+
+export function construirSystemPrompt(
+  ctx: ContextoNegocio,
+  plantilla: string = PLANTILLA_POR_DEFECTO,
+  opciones?: { canal?: 'whatsapp' | 'web' }
+): string {
   const hoy = fechaLocalHoy();
   const clp = (n: number) => '$' + n.toLocaleString('es-CL');
 
@@ -90,7 +104,7 @@ export function construirSystemPrompt(ctx: ContextoNegocio, plantilla: string = 
     ? ctx.citasClienta.map((c) => `- ${c.servicio} el ${c.fecha} a las ${c.horaInicio} (cita_id: ${c.id})`).join('\n')
     : 'Ninguna.';
 
-  return renderizar(plantilla, {
+  const base = renderizar(plantilla, {
     negocio: ctx.nombreNegocio,
     ubicacion: ctx.rubro ? ` (${ctx.rubro.toLowerCase()}${ctx.comuna ? ` en ${ctx.comuna}` : ''})` : '',
     estilista: ctx.nombreEstilista,
@@ -103,4 +117,6 @@ export function construirSystemPrompt(ctx: ContextoNegocio, plantilla: string = 
     instrucciones: ctx.instrucciones ? `\n## Instrucciones de ${ctx.nombreEstilista}\n${ctx.instrucciones}` : '',
     info_extra: ctx.infoExtra ? `\n## Información adicional\n${ctx.infoExtra}` : ''
   });
+
+  return opciones?.canal === 'web' ? base + BLOQUE_WEB : base;
 }

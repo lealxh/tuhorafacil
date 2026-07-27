@@ -246,7 +246,8 @@ export async function correrAgente(
       ),
     nombreClienta: clienta.nombre
     },
-    plantilla
+    plantilla,
+    { canal: ctxTools.origen === 'web' ? 'web' : 'whatsapp' }
   );
 
   const historial = await db.query.mensajes.findMany({
