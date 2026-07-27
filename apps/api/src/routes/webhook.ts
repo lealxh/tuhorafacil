@@ -43,6 +43,6 @@ webhook.post('/kapso', async (c) => {
   } catch {
     return c.json({ error: 'json inválido' }, 400);
   }
-  c.executionCtx.waitUntil(procesarWebhookKapso(c.env, body));
+  c.executionCtx.waitUntil(procesarWebhookKapso(c.env, body, c.req.header('X-Webhook-Event')));
   return c.text('OK', 200);
 });

@@ -85,10 +85,17 @@ export function mapearEventoKapso(tipo: string | undefined, evento: KapsoEvento)
   return { accion: 'ignorar', motivo: `evento_${tipo ?? 'desconocido'}` };
 }
 
-export async function procesarWebhookKapso(env: Env, body: KapsoWebhookBody): Promise<void> {
+export async function procesarWebhookKapso(
+  env: Env,
+  body: KapsoWebhookBody,
+  tipoEvento?: string
+): Promise<void> {
+  // Kapso manda el tipo en el body (eventos batch de mensajes) o en el header
+  // X-Webhook-Event (eventos sueltos con los campos al nivel raíz).
+  const tipo = body.type ?? tipoEvento;
   for (const evento of eventosDe(body)) {
     try {
-      const mapeado = mapearEventoKapso(body.type, evento);
+      const mapeado = mapearEventoKapso(tipo, evento);
       if (mapeado.accion === 'entrante') {
         await procesarMensajeEntrante(env, mapeado.entrada);
       } else if (mapeado.accion === 'eco') {
