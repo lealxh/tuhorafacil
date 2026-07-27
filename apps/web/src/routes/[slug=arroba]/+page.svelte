@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import ChatPublico from './ChatPublico.svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -44,12 +45,24 @@
 			<p class="text-ink mt-2.5 text-sm leading-relaxed">{data.negocio.bio}</p>
 		{/if}
 
-		<a
-			href={linkReserva()}
-			class="btn-primary rounded-field mt-5 block px-4 py-3.5 text-center text-[15px]"
-		>
-			Reservar una hora
-		</a>
+		{#if data.tieneAgente}
+			<div class="mt-5">
+				<ChatPublico slug={page.params.slug ?? ''} negocio={data.negocio.nombre} />
+			</div>
+			<a
+				href={linkReserva()}
+				class="text-blush-deep mt-3 block text-center text-sm font-semibold"
+			>
+				o reserva tú misma eligiendo el horario ›
+			</a>
+		{:else}
+			<a
+				href={linkReserva()}
+				class="btn-primary rounded-field mt-5 block px-4 py-3.5 text-center text-[15px]"
+			>
+				Reservar una hora
+			</a>
+		{/if}
 
 		<h2 class="text-ink-soft mt-7 text-xs font-bold tracking-wider uppercase">Servicios</h2>
 		<div class="mt-3 flex flex-col gap-2.5">

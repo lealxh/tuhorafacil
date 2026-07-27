@@ -1,5 +1,5 @@
 import { getDb } from '$lib/server/db';
-import { and, asc, eq, estilistas, horarios, servicios } from '@tuhorafacil/db';
+import { and, asc, eq, estilistas, horarios, servicios, tiers } from '@tuhorafacil/db';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
@@ -12,7 +12,10 @@ export const load: PageServerLoad = async (event) => {
 	});
 	if (!estilista) error(404, 'Página no encontrada');
 
+	const tier = await db.query.tiers.findFirst({ where: eq(tiers.id, estilista.tierId) });
+
 	return {
+		tieneAgente: tier?.tieneAgente ?? false,
 		negocio: {
 			nombre: estilista.nombreNegocio,
 			rubro: estilista.rubro,
