@@ -25,7 +25,7 @@
 		"BETTER_AUTH_URL": "https://tuhorafacil-web.tuhorafacil.workers.dev",
 		"API_BASE_URL": "https://tuhorafacil-api.tuhorafacil.workers.dev",
 		// Sitekey público de Turnstile (anti-bot del chat público). Vacío = desactivado.
-		"TURNSTILE_SITEKEY": ""
+		"TURNSTILE_SITEKEY": "0x4AAAAAAEAadws8UVMLF1SD"
 	},
 	// Worker-to-worker: en producción el fetch a la URL pública workers.dev de la
 	// propia cuenta está bloqueado, así que la api se llama por service binding
