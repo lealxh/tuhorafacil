@@ -69,7 +69,8 @@ export async function chatWebMensaje(
     telefono: `web:${sesion}`,
     conversacionId,
     origen: 'web',
-    citasCreadas: { count: 0 }
+    citasCreadas: { count: 0 },
+    agendo: { valor: false }
   };
 
   try {

@@ -102,6 +102,12 @@ Estás atendiendo por el chat de la página web, no por WhatsApp. Aquí la clien
 - Pasa ese teléfono a crear_cita en el parámetro telefono_clienta (formato con código de país, ej: +56912345678).
 - No agendes sin un teléfono válido de la clienta.`;
 
+// Recordatorio final (lo último que lee el modelo): la regla más crítica, por recencia.
+const BLOQUE_REGLA_FINAL = `
+
+## VERIFICA ANTES DE ENVIAR
+Si tu respuesta dice que una cita quedó agendada, confirmada, lista o reservada: ¿llamaste crear_cita (o reagendar_cita) y te devolvió ok EN ESTE MISMO TURNO? Si NO, no lo digas — llama la herramienta primero. Anunciar una cita que no agendaste es el peor error posible.`;
+
 export function construirSystemPrompt(
   ctx: ContextoNegocio,
   plantilla: string = PLANTILLA_POR_DEFECTO,
@@ -135,5 +141,6 @@ export function construirSystemPrompt(
   });
 
   const conFechas = base + bloqueFechas();
-  return opciones?.canal === 'web' ? conFechas + BLOQUE_WEB : conFechas;
+  const conCanal = opciones?.canal === 'web' ? conFechas + BLOQUE_WEB : conFechas;
+  return conCanal + BLOQUE_REGLA_FINAL;
 }

@@ -95,6 +95,8 @@ export interface ContextoTools {
   origen?: 'agente' | 'web';
   /** Se marca cuando crear_cita tiene éxito, para el metering */
   citasCreadas: { count: number };
+  /** true si crear_cita o reagendar_cita tuvieron éxito en este turno (red anti-alucinación) */
+  agendo: { valor: boolean };
 }
 
 async function citaDeLaClienta(ctx: ContextoTools, citaId: string) {
@@ -145,6 +147,7 @@ export async function ejecutarTool(ctx: ContextoTools, nombre: string, input: Re
         await ctx.db.update(clientasFinales).set({ nombre: nombre_clienta }).where(eq(clientasFinales.id, ctx.clientaId));
       }
       ctx.citasCreadas.count++;
+      ctx.agendo.valor = true;
       return JSON.stringify({
         ok: true,
         cita_id: r.id,
@@ -171,6 +174,7 @@ export async function ejecutarTool(ctx: ContextoTools, nombre: string, input: Re
         return JSON.stringify(r);
       }
       await ctx.db.update(citas).set({ estado: 'reagendada' }).where(eq(citas.id, cita.id));
+      ctx.agendo.valor = true;
       return JSON.stringify({
         ok: true,
         cita_id: r.id,

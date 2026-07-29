@@ -33,6 +33,8 @@ const MAX_ITERACIONES = 6;
 const HISTORIAL_MAX = 30;
 const COOLDOWN_COEXISTENCE_MS = 10 * 60 * 1000;
 const FALLBACK = 'Dame un momento y te respondo 🙏';
+// Frases que afirman una cita ya hecha (no preguntas como "¿te confirmo?"): dispara la red anti-alucinación
+const CONFIRMA_CITA = /(confirmad[ao]s?|agendad[ao]s?|agend[ée]|reservad[ao]s?|reserv[ée]|qued[óo]\s+(lista|agendad|reservad))/i;
 const LIMITE_ALCANZADO =
   'En este momento no puedo agendar por aquí 🙏 La estilista te responderá personalmente apenas pueda.';
 
@@ -190,7 +192,8 @@ export async function procesarMensajeEntrante(env: Env, entrada: EntradaMensaje)
     clientaId: clienta.id,
     telefono,
     conversacionId: conversacion.id,
-    citasCreadas: { count: 0 }
+    citasCreadas: { count: 0 },
+    agendo: { valor: false }
   };
 
   try {
@@ -265,6 +268,7 @@ export async function correrAgente(
 
   const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
   const tokens = { entrada: 0, salida: 0 };
+  let corregido = false;
 
   for (let i = 0; i < MAX_ITERACIONES; i++) {
     console.log(JSON.stringify({ event: 'llm_llamada', iteracion: i }));
@@ -284,6 +288,24 @@ export async function correrAgente(
         .map((b) => b.text)
         .join('\n')
         .trim();
+
+      // Red anti-alucinación: si dice que una cita quedó agendada pero no llamó la
+      // herramienta en este turno, se le da UNA oportunidad de corregir (agendar o
+      // aclarar) antes de mandar un "confirmada" falso a la clienta.
+      if (!corregido && !ctxTools.agendo.valor && CONFIRMA_CITA.test(texto)) {
+        corregido = true;
+        console.log(JSON.stringify({ event: 'agente_confirmacion_sin_cita', conversacionId }));
+        turnos.push({ role: 'assistant', content: respuesta.content });
+        turnos.push({
+          role: 'user',
+          content:
+            '[Sistema] No registraste ninguna cita con crear_cita ni reagendar_cita en este turno. ' +
+            'Si la clienta aceptó una hora NUEVA, llama crear_cita AHORA (o reagendar_cita si movía una existente) antes de responder. ' +
+            'Si solo estabas informando sobre una cita que ya existe, responde sin decir que la acabas de agendar.'
+        });
+        continue;
+      }
+
       return { texto: texto || FALLBACK, tokens };
     }
 
