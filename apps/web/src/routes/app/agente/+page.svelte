@@ -128,12 +128,14 @@
 				{/if}
 
 				<a
-					href="/app/probar-agente"
+					href="/@{data.estilista?.slugPublico}"
+					target="_blank"
+					rel="noopener"
 					class="rounded-card border-line flex items-center gap-2 border bg-white px-4 py-3 text-sm font-semibold shadow-sm"
 				>
 					<span class="text-base">💬</span>
-					<span class="flex-1">Probar agente</span>
-					<span class="text-ink-faint">›</span>
+					<span class="flex-1">Tu agente en la web · pruébalo y compártelo</span>
+					<span class="text-ink-faint">↗</span>
 				</a>
 
 				{@render statTiles('flex lg:hidden')}
