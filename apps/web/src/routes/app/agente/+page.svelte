@@ -72,15 +72,21 @@
 						{activo && waConectado ? '✨' : '😴'}
 					</div>
 					<div class="min-w-0 flex-1">
-						<p class="text-[15px] font-bold">
+						<p class="flex items-center gap-1.5 text-[15px] font-bold">
+							{#if waConectado}
+								<span class="bg-success inline-block h-2.5 w-2.5 flex-none rounded-full"></span>
+							{/if}
 							{!waConectado ? 'WhatsApp sin conectar' : activo ? 'Trabajando por ti' : 'En pausa'}
 						</p>
 						<p class="text-xs {activo && waConectado ? 'text-white/85' : 'text-ink-soft'}">
-							{!waConectado
-								? 'Se activa cuando conectes tu número'
-								: activo
-									? 'Respondiendo y agendando en tu WhatsApp'
-									: 'Tú respondes manualmente'}
+							{#if waConectado}
+								{data.estilista?.waDisplayPhone
+									? `📱 ${data.estilista.waDisplayPhone}`
+									: 'WhatsApp conectado'}
+								{activo ? '' : ' · en pausa'}
+							{:else}
+								Se activa cuando conectes tu número
+							{/if}
 						</p>
 					</div>
 					<form method="POST" action="?/toggle" use:enhance>

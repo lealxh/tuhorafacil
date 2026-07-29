@@ -78,6 +78,13 @@
       "when": 1784413834060,
       "tag": "0010_normal_blizzard",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1785291094100,
+      "tag": "0011_short_sue_storm",
+      "breakpoints": true
     }
   ]
 }

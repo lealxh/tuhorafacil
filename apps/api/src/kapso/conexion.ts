@@ -75,10 +75,18 @@ async function buscarCustomerPorExternalId(env: Env, externalId: string): Promis
  * Idempotente: se puede llamar desde el evento phone_number.created y desde
  * la confirmación al volver del setup link.
  */
+async function obtenerDisplayPhone(env: Env, phoneNumberId: string): Promise<string | null> {
+  const res = await kapso(env, '/whatsapp/phone_numbers');
+  if (!res.ok) return null;
+  const { data } = (await res.json()) as { data: { phone_number_id?: string; display_phone_number?: string }[] };
+  return data.find((n) => n.phone_number_id === phoneNumberId)?.display_phone_number ?? null;
+}
+
 export async function activarNumero(env: Env, db: Db, estilistaId: string, phoneNumberId: string): Promise<void> {
+  const displayPhone = await obtenerDisplayPhone(env, phoneNumberId);
   await db
     .update(estilistas)
-    .set({ waPhoneNumberId: phoneNumberId, waEstado: 'activo' })
+    .set({ waPhoneNumberId: phoneNumberId, waDisplayPhone: displayPhone, waEstado: 'activo' })
     .where(eq(estilistas.id, estilistaId));
   // Conectar el número = querer al agente trabajando: se activa (destrabando una pausa previa)
   await db

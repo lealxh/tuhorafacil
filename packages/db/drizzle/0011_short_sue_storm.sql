@@ -1,0 +1,1 @@
+ALTER TABLE `estilistas` ADD `wa_display_phone` text;
