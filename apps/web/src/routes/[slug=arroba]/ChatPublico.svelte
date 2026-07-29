@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 
 	// slug incluye el @ (ej. "@salonregias"); es la base del endpoint /{slug}/chat
 	let { slug, negocio, sitekey }: { slug: string; negocio: string; sitekey: string } = $props();
@@ -12,11 +12,15 @@
 	let sesion = '';
 	let hilo: HTMLDivElement | undefined = $state();
 
+	let abierto = $state(false);
+	let mostrarGlobito = $state(false);
+
 	// Turnstile (anti-bot): se muestra hasta la primera verificación exitosa
 	let turnstileEl: HTMLDivElement | undefined = $state();
 	let verificado = $state(false);
 	let tsToken = $state('');
 	let tsWidgetId: string | undefined;
+	let tsIniciado = false;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const ts = () => (window as any).turnstile;
 
@@ -37,7 +41,8 @@
 	}
 
 	async function iniciarTurnstile() {
-		if (!sitekey || !turnstileEl) return;
+		if (tsIniciado || !sitekey || verificado || !turnstileEl) return;
+		tsIniciado = true;
 		await cargarScriptTurnstile();
 		tsWidgetId = ts().render(turnstileEl, {
 			sitekey,
@@ -46,6 +51,14 @@
 			'error-callback': () => (tsToken = ''),
 			'expired-callback': () => (tsToken = '')
 		});
+	}
+
+	async function abrir() {
+		abierto = true;
+		mostrarGlobito = false;
+		await tick();
+		iniciarTurnstile();
+		alFondo();
 	}
 
 	onMount(async () => {
@@ -62,15 +75,14 @@
 			/* sin historial, se empieza de cero */
 		}
 		if (mensajes.length > 0) verificado = true; // ya conversó antes: la cookie cubre la sesión
-		await iniciarTurnstile();
-		alFondo();
+		// Globito de enganche tras un momento (si no lo abrió aún)
+		setTimeout(() => (mostrarGlobito = !abierto), 1200);
 	});
 
 	async function enviar() {
 		const t = texto.trim();
 		if (!t || enviando) return;
-		// Anti-bot: hasta verificar, exige el token de Turnstile
-		if (sitekey && !verificado && !tsToken) return;
+		if (sitekey && !verificado && !tsToken) return; // anti-bot: exige token hasta verificar
 		pendiente = t;
 		texto = '';
 		enviando = true;
@@ -85,7 +97,7 @@
 			if (r.ok) {
 				verificado = true; // el server dejó la cookie; ya no hace falta el widget
 			} else if (ts() && tsWidgetId !== undefined) {
-				ts().reset(tsWidgetId); // token consumido/ inválido → refrescar
+				ts().reset(tsWidgetId); // token consumido / inválido → refrescar
 				tsToken = '';
 			}
 			const respuesta = r.ok
@@ -113,64 +125,93 @@
 	}
 </script>
 
-<div class="rounded-card border-line overflow-hidden border bg-white shadow-sm">
-	<div class="from-primary to-primary-light flex items-center gap-2.5 bg-gradient-to-br px-4 py-3 text-white">
-		<span class="text-lg">💬</span>
-		<div class="min-w-0">
-			<p class="text-sm font-bold">Chatea y agenda al tiro</p>
-			<p class="text-[11px] text-white/85">Te atiende el asistente de {negocio}</p>
-		</div>
-	</div>
-
-	<div bind:this={hilo} class="hilo flex max-h-[340px] min-h-[180px] flex-col gap-2 overflow-y-auto px-3.5 py-3">
-		{#each mensajes as mensaje, i (i)}
-			<div
-				class="max-w-[85%] rounded-2xl px-3.5 py-2 text-sm whitespace-pre-wrap {mensaje.rol === 'clienta'
-					? 'bg-blush text-ink self-end'
-					: 'bg-surface self-start'}"
-			>
-				{mensaje.contenido}
-			</div>
-		{/each}
-		{#if pendiente}
-			<div class="bg-blush text-ink max-w-[85%] self-end rounded-2xl px-3.5 py-2 text-sm whitespace-pre-wrap">
-				{pendiente}
-			</div>
-		{/if}
-		{#if enviando}
-			<div class="bg-surface self-start rounded-2xl px-3.5 py-2 text-sm">
-				<span class="text-ink-faint">escribiendo…</span>
-			</div>
-		{:else if mensajes.length === 0 && !pendiente}
-			<p class="text-ink-soft m-auto max-w-[16rem] text-center text-sm">
-				Escríbele, por ejemplo, <strong>«hola, quiero agendar un corte»</strong> 💇‍♀️
-			</p>
-		{/if}
-	</div>
-
-	<div class="border-line flex flex-col gap-2 border-t p-2.5">
-		{#if sitekey && !verificado}
-			<div bind:this={turnstileEl} class="flex justify-center"></div>
-		{/if}
-		<div class="flex items-end gap-2">
-			<textarea
-				bind:value={texto}
-				rows="1"
-				placeholder="Escribe aquí…"
-				enterkeyhint="send"
-				onkeydown={onKey}
-				class="input-base bg-surface flex-1 resize-none px-3.5 py-2.5 text-[16px]"
-			></textarea>
+<!-- Botón flotante -->
+{#if !abierto}
+	<div class="fixed right-4 bottom-4 z-50 flex flex-col items-end gap-2">
+		{#if mostrarGlobito}
 			<button
-				onclick={enviar}
-				disabled={enviando || !texto.trim() || (!!sitekey && !verificado && !tsToken)}
-				class="btn-primary rounded-field px-4 py-2.5 text-sm disabled:opacity-50"
+				onclick={abrir}
+				class="rounded-2xl rounded-br-sm border-line max-w-[220px] border bg-white px-3.5 py-2 text-left text-sm shadow-lg"
 			>
-				Enviar
+				👋 ¿Agendamos tu hora? Escríbeme aquí
+			</button>
+		{/if}
+		<button
+			onclick={abrir}
+			aria-label="Abrir chat"
+			class="btn-primary flex h-14 w-14 items-center justify-center rounded-full text-[26px] shadow-[0_14px_28px_-8px_rgba(217,127,106,.7)]"
+		>
+			💬
+		</button>
+	</div>
+{/if}
+
+<!-- Panel del chat -->
+{#if abierto}
+	<div
+		class="fixed inset-x-0 bottom-0 z-50 flex flex-col overflow-hidden bg-white shadow-2xl sm:inset-x-auto sm:right-4 sm:bottom-4 sm:w-[380px] sm:rounded-[20px] rounded-t-[20px] h-[80dvh] sm:h-[540px] sm:max-h-[80dvh]"
+	>
+		<div class="from-primary to-primary-light flex items-center gap-2.5 bg-gradient-to-br px-4 py-3 text-white">
+			<span class="text-lg">💬</span>
+			<div class="min-w-0 flex-1">
+				<p class="text-sm font-bold">Chatea y agenda al tiro</p>
+				<p class="text-[11px] text-white/85">Te atiende el asistente de {negocio}</p>
+			</div>
+			<button onclick={() => (abierto = false)} aria-label="Minimizar chat" class="text-xl text-white/90">
+				✕
 			</button>
 		</div>
+
+		<div bind:this={hilo} class="hilo flex flex-1 flex-col gap-2 overflow-y-auto px-3.5 py-3">
+			{#each mensajes as mensaje, i (i)}
+				<div
+					class="max-w-[85%] rounded-2xl px-3.5 py-2 text-sm whitespace-pre-wrap {mensaje.rol === 'clienta'
+						? 'bg-blush text-ink self-end'
+						: 'bg-surface self-start'}"
+				>
+					{mensaje.contenido}
+				</div>
+			{/each}
+			{#if pendiente}
+				<div class="bg-blush text-ink max-w-[85%] self-end rounded-2xl px-3.5 py-2 text-sm whitespace-pre-wrap">
+					{pendiente}
+				</div>
+			{/if}
+			{#if enviando}
+				<div class="bg-surface self-start rounded-2xl px-3.5 py-2 text-sm">
+					<span class="text-ink-faint">escribiendo…</span>
+				</div>
+			{:else if mensajes.length === 0 && !pendiente}
+				<p class="text-ink-soft m-auto max-w-[16rem] text-center text-sm">
+					Escríbeme, por ejemplo, <strong>«hola, quiero agendar un corte»</strong> 💇‍♀️
+				</p>
+			{/if}
+		</div>
+
+		<div class="border-line flex flex-col gap-2 border-t p-2.5">
+			{#if sitekey && !verificado}
+				<div bind:this={turnstileEl} class="flex justify-center"></div>
+			{/if}
+			<div class="flex items-end gap-2">
+				<textarea
+					bind:value={texto}
+					rows="1"
+					placeholder="Escribe aquí…"
+					enterkeyhint="send"
+					onkeydown={onKey}
+					class="input-base bg-surface flex-1 resize-none px-3.5 py-2.5 text-[16px]"
+				></textarea>
+				<button
+					onclick={enviar}
+					disabled={enviando || !texto.trim() || (!!sitekey && !verificado && !tsToken)}
+					class="btn-primary rounded-field px-4 py-2.5 text-sm disabled:opacity-50"
+				>
+					Enviar
+				</button>
+			</div>
+		</div>
 	</div>
-</div>
+{/if}
 
 <style>
 	.hilo {

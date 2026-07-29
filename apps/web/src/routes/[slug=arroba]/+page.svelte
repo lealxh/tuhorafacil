@@ -46,18 +46,11 @@
 		{/if}
 
 		{#if data.tieneAgente}
-			<div class="mt-5">
-				<ChatPublico
-					slug={page.params.slug ?? ''}
-					negocio={data.negocio.nombre}
-					sitekey={data.turnstileSitekey}
-				/>
-			</div>
 			<a
 				href={linkReserva()}
-				class="text-blush-deep mt-3 block text-center text-sm font-semibold"
+				class="rounded-field border-line text-ink mt-5 block border bg-white px-4 py-3 text-center text-[15px] font-semibold"
 			>
-				o reserva tú misma eligiendo el horario ›
+				Reservar eligiendo el horario
 			</a>
 		{:else}
 			<a
@@ -108,3 +101,11 @@
 		</p>
 	</div>
 </main>
+
+{#if data.tieneAgente}
+	<ChatPublico
+		slug={page.params.slug ?? ''}
+		negocio={data.negocio.nombre}
+		sitekey={data.turnstileSitekey}
+	/>
+{/if}
