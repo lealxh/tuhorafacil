@@ -1,5 +1,5 @@
 import { fechaLocalHoy, horaLocalAhora } from './fechas';
-import { diaSemanaDe } from '@tuhorafacil/core';
+import { diaSemanaDe, sumarDias } from '@tuhorafacil/core';
 
 const DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
 
@@ -76,6 +76,22 @@ function renderizar(plantilla: string, valores: Record<string, string>): string 
   return plantilla.replace(/\{\{(\w+)\}\}/g, (original, clave) => valores[clave] ?? original);
 }
 
+// Fechas resueltas para los próximos 14 días. Haiku calcula mal los días ("el
+// viernes" → fecha equivocada), así que se las damos hechas para que las BUSQUE.
+function bloqueFechas(): string {
+  const hoy = fechaLocalHoy();
+  const lineas = Array.from({ length: 14 }, (_, i) => {
+    const f = sumarDias(hoy, i);
+    const etq = i === 0 ? ' (hoy)' : i === 1 ? ' (mañana)' : '';
+    return `- ${DIAS[diaSemanaDe(f)]} ${f}${etq}`;
+  });
+  return (
+    '\n\n## Fechas de referencia (NO calcules días, búscalos aquí)\n' +
+    'Cuando la clienta diga un día ("el viernes", "mañana", "el 5"), toma la fecha exacta de esta lista:\n' +
+    lineas.join('\n')
+  );
+}
+
 // Instrucción extra para el canal web: la clienta es anónima (sin teléfono conocido).
 // Se agrega DESPUÉS de renderizar para que aplique aunque el admin edite la plantilla.
 const BLOQUE_WEB = `
@@ -118,5 +134,6 @@ export function construirSystemPrompt(
     info_extra: ctx.infoExtra ? `\n## Información adicional\n${ctx.infoExtra}` : ''
   });
 
-  return opciones?.canal === 'web' ? base + BLOQUE_WEB : base;
+  const conFechas = base + bloqueFechas();
+  return opciones?.canal === 'web' ? conFechas + BLOQUE_WEB : conFechas;
 }

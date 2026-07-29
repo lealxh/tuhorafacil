@@ -104,6 +104,8 @@ async function citaDeLaClienta(ctx: ContextoTools, citaId: string) {
 }
 
 export async function ejecutarTool(ctx: ContextoTools, nombre: string, input: Record<string, unknown>): Promise<string> {
+  // Log sin datos personales (fecha/servicio) para diagnosticar el uso de herramientas
+  console.log(JSON.stringify({ event: 'tool', nombre, fecha: input.fecha ?? input.nueva_fecha, servicioId: input.servicio_id }));
   switch (nombre) {
     case 'consultar_disponibilidad': {
       // Pasos de 30 min para ofrecer: lista completa del día sin truncar
