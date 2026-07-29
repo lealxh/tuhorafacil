@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 
 	// slug incluye el @ (ej. "@salonregias"); es la base del endpoint /{slug}/chat
-	let { slug, negocio }: { slug: string; negocio: string } = $props();
+	let { slug, negocio, sitekey }: { slug: string; negocio: string; sitekey: string } = $props();
 
 	type Mensaje = { rol: string; contenido: string };
 	let mensajes: Mensaje[] = $state([]);
@@ -12,8 +12,40 @@
 	let sesion = '';
 	let hilo: HTMLDivElement | undefined = $state();
 
+	// Turnstile (anti-bot): se muestra hasta la primera verificación exitosa
+	let turnstileEl: HTMLDivElement | undefined = $state();
+	let verificado = $state(false);
+	let tsToken = $state('');
+	let tsWidgetId: string | undefined;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const ts = () => (window as any).turnstile;
+
 	function alFondo() {
 		queueMicrotask(() => hilo?.scrollTo({ top: hilo.scrollHeight }));
+	}
+
+	function cargarScriptTurnstile(): Promise<void> {
+		return new Promise((resolve) => {
+			if (ts()) return resolve();
+			const s = document.createElement('script');
+			s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+			s.async = true;
+			s.defer = true;
+			s.onload = () => resolve();
+			document.head.appendChild(s);
+		});
+	}
+
+	async function iniciarTurnstile() {
+		if (!sitekey || !turnstileEl) return;
+		await cargarScriptTurnstile();
+		tsWidgetId = ts().render(turnstileEl, {
+			sitekey,
+			action: 'turnstile-spin-v1',
+			callback: (t: string) => (tsToken = t),
+			'error-callback': () => (tsToken = ''),
+			'expired-callback': () => (tsToken = '')
+		});
 	}
 
 	onMount(async () => {
@@ -29,12 +61,16 @@
 		} catch {
 			/* sin historial, se empieza de cero */
 		}
+		if (mensajes.length > 0) verificado = true; // ya conversó antes: la cookie cubre la sesión
+		await iniciarTurnstile();
 		alFondo();
 	});
 
 	async function enviar() {
 		const t = texto.trim();
 		if (!t || enviando) return;
+		// Anti-bot: hasta verificar, exige el token de Turnstile
+		if (sitekey && !verificado && !tsToken) return;
 		pendiente = t;
 		texto = '';
 		enviando = true;
@@ -43,9 +79,15 @@
 			const r = await fetch(`/${slug}/chat`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ sesion, texto: t })
+				body: JSON.stringify({ sesion, texto: t, turnstileToken: tsToken })
 			});
 			mensajes = [...mensajes, { rol: 'clienta', contenido: t }];
+			if (r.ok) {
+				verificado = true; // el server dejó la cookie; ya no hace falta el widget
+			} else if (ts() && tsWidgetId !== undefined) {
+				ts().reset(tsWidgetId); // token consumido/ inválido → refrescar
+				tsToken = '';
+			}
 			const respuesta = r.ok
 				? ((await r.json()) as { texto: string }).texto
 				: 'No pude responder ahora 🙏 Intenta de nuevo o reserva con el botón de arriba.';
@@ -106,22 +148,27 @@
 		{/if}
 	</div>
 
-	<div class="border-line flex items-end gap-2 border-t p-2.5">
-		<textarea
-			bind:value={texto}
-			rows="1"
-			placeholder="Escribe aquí…"
-			enterkeyhint="send"
-			onkeydown={onKey}
-			class="input-base bg-surface flex-1 resize-none px-3.5 py-2.5 text-[16px]"
-		></textarea>
-		<button
-			onclick={enviar}
-			disabled={enviando || !texto.trim()}
-			class="btn-primary rounded-field px-4 py-2.5 text-sm disabled:opacity-50"
-		>
-			Enviar
-		</button>
+	<div class="border-line flex flex-col gap-2 border-t p-2.5">
+		{#if sitekey && !verificado}
+			<div bind:this={turnstileEl} class="flex justify-center"></div>
+		{/if}
+		<div class="flex items-end gap-2">
+			<textarea
+				bind:value={texto}
+				rows="1"
+				placeholder="Escribe aquí…"
+				enterkeyhint="send"
+				onkeydown={onKey}
+				class="input-base bg-surface flex-1 resize-none px-3.5 py-2.5 text-[16px]"
+			></textarea>
+			<button
+				onclick={enviar}
+				disabled={enviando || !texto.trim() || (!!sitekey && !verificado && !tsToken)}
+				class="btn-primary rounded-field px-4 py-2.5 text-sm disabled:opacity-50"
+			>
+				Enviar
+			</button>
+		</div>
 	</div>
 </div>
 

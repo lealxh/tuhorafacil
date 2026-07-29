@@ -5,3 +5,5 @@ BETTER_AUTH_URL=http://localhost:5173
 API_BASE_URL=http://localhost:8787
 # Debe coincidir con el MOCK_CHAT_SECRET de apps/api
 MOCK_CHAT_SECRET=dev-mock-secret
+# Turnstile (anti-bot del chat público): secret del widget. Vacío = sin verificación (dev)
+TURNSTILE_SECRET=

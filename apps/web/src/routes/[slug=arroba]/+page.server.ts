@@ -16,6 +16,8 @@ export const load: PageServerLoad = async (event) => {
 
 	return {
 		tieneAgente: tier?.tieneAgente ?? false,
+		// Sitekey público de Turnstile (vacío en dev → el chat no exige captcha)
+		turnstileSitekey: event.platform?.env?.TURNSTILE_SITEKEY ?? '',
 		negocio: {
 			nombre: estilista.nombreNegocio,
 			rubro: estilista.rubro,

@@ -47,7 +47,11 @@
 
 		{#if data.tieneAgente}
 			<div class="mt-5">
-				<ChatPublico slug={page.params.slug ?? ''} negocio={data.negocio.nombre} />
+				<ChatPublico
+					slug={page.params.slug ?? ''}
+					negocio={data.negocio.nombre}
+					sitekey={data.turnstileSitekey}
+				/>
 			</div>
 			<a
 				href={linkReserva()}
